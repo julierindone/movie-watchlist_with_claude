@@ -103,19 +103,6 @@ export function generateWatchlistHtml() {
 	}
 }
 
-function showNextChunk() {
-	const chunkSize = 3;
-	const resultsToAdd = resultsArray.slice(currentResultIndex, currentResultIndex + chunkSize);
-	currentResultIndex += chunkSize;
-
-	// if there aren't any more results, remove button.
-	if (currentResultIndex >= resultsArray.length - 1) {
-		document.getElementById('more-results-btn').style.display = 'none';
-	}
-
-	return resultsToAdd;
-};
-
 function generateRatingHtml(rating) {
 	if (rating) {
 		return `

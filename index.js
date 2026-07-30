@@ -7,11 +7,6 @@ const searchBarWrapper = document.getElementById('search-bar-wrapper');
 const searchForm = document.getElementById('search-form');
 const searchBar = document.getElementById('search-bar');
 
-export let currentResultIndex = 0;
-export function setCurrentResultIndex(lastIndex) {
-  currentResultIndex = lastIndex;
-}
-
 // Check to see if watchlist exists in localStorage and create if it doesn't
 initLocalStorageWatchlist();
 

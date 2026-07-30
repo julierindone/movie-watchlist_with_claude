@@ -1,9 +1,7 @@
-import { setCurrentResultIndex } from '../index.js';
 import { resultsArray } from './search.js';
 
 export function resetAll() {
 	resultsArray.length = 0;
-	setCurrentResultIndex();
 	document.getElementById('main-wrapper').innerHTML = '';
 }
 

@@ -1,5 +1,5 @@
 {
-  "name": "movie-watchlist",
+  "name": "movie-watchlist_with_claude",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/julierindone/movie-watchlist.git"
+    "url": "git+https://github.com/julierindone/movie-watchlist_with_claude.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/julierindone/movie-watchlist/issues"
+    "url": "https://github.com/julierindone/movie-watchlist_with_claude/issues"
   },
-  "homepage": "https://github.com/julierindone/movie-watchlist#readme",
+  "homepage": "https://github.com/julierindone/movie-watchlist_with_claude#readme",
   "dependencies": {
     "vanilla-tilt": "^1.8.1",
     "vite": "^8.1.5"
