@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -22,5 +22,8 @@
   "dependencies": {
     "vanilla-tilt": "^1.8.1",
     "vite": "^8.1.5"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }
