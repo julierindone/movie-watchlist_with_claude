@@ -7,18 +7,9 @@ describe('createMovieObject', () => {
 			Title: "Say Anything",
 			imdbID: "tt0098258",
 			Ratings: [
-				{
-					"Source": "Internet Movie Database",
-					"Value": "7.3/10"
-				},
-				{
-					"Source": "Rotten Tomatoes",
-					"Value": "98%"
-				},
-				{
-					"Source": "Metacritic",
-					"Value": "86/100"
-				}
+				{ "Source": "Internet Movie Database", "Value": "7.3/10" },
+				{ "Source": "Rotten Tomatoes", "Value": "98%" },
+				{ "Source": "Metacritic", "Value": "86/100" }
 			],
 			RunTime: "100 min",
 			Year: "1989",
@@ -39,7 +30,6 @@ describe('createMovieObject', () => {
 			Poster: 'N/A'
 		};
 		const result = createMovieObject(rawMovie, false);
-
 		expect(result.thumbnail).toBe('assets/images/film_icon.png');
 	});
 });
