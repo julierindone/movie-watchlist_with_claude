@@ -9,8 +9,15 @@ const searchBar = document.getElementById('search-bar');
 export let resultsArray = [];
 export let movieDetails = {};
 export let searchType = null;
+
+// Setter for the module-level searchType, so other modules can update which
+// search mode (exact/fuzzy/watchlist) is currently active without reaching
+// in and mutating the exported binding directly.
 export function setSearchType(value) { searchType = value; }
 
+// Entry point for a search: reads the query from the search bar, determines
+// which search mode is active, fetches results from the API, normalizes them
+// into movie objects, and hands them off to be rendered as HTML.
 export async function searchMovies() {
 	const query = (searchBar.value).replaceAll(' ', '+');
 	setSearchType(getSearchType());
@@ -41,6 +48,9 @@ export async function searchMovies() {
 		: generateFuzzyResultsHtml(resultsArray);
 }
 
+// Inspects the checked radio button among the 'search-type' inputs to figure
+// out which mode the UI is currently set to. Doubles as the source of truth
+// for the watchlist view, since that page reuses the same radio group.
 function getSearchType() {
 	const searchTypes = document.getElementsByName('search-type');
 
@@ -55,11 +65,15 @@ function getSearchType() {
 	return typeOfSearch;
 }
 
+// Fallback handler wired to a poster <img>'s onerror event: swaps in a
+// placeholder icon and alt text whenever a movie's poster fails to load.
 export function handleImageError(brokenImage) {
 	brokenImage.src = './assets/images/film_icon.png';
 	brokenImage.alt = 'film poster not found';
 }
 
+// Click handler for a result's "more details" control: looks up the full
+// movie record by IMDb ID and renders an expanded details view for it.
 // TODO: add error message back in here in next commit. Return might have been messing things up.
 // TODO: Refactor to use details tag
 export async function handleMoreDetailsClick(eTarget) {
@@ -77,6 +91,8 @@ export async function handleMoreDetailsClick(eTarget) {
 	generateMoreDetails(eTarget, movieDetails);
 }
 
+// Click handler for a result's "less details" control: collapses the
+// expanded <details> section for that movie back to its closed state.
 export async function handleLessDetailsClick(eTarget) {
 	const details = eTarget.closest('details');
 
