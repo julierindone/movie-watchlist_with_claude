@@ -50,7 +50,7 @@ export async function searchMovies() {
 
 // Inspects the checked radio button among the 'search-type' inputs to figure
 // out which mode the UI is currently set to. Doubles as the source of truth
-// for the watchlist view, since that page reuses the same radio group.
+// for the watchlist view.
 function getSearchType() {
 	const searchTypes = document.getElementsByName('search-type');
 
