@@ -40,7 +40,7 @@ export function initLocalStorageWatchlist() {
 
 	// if there's a parsing error, completely reset it.
 	catch (error) {
-		console.log(`Corrupted JSON. Resetting.`);
+		console.log(`Corrupted JSON. Resetting. Error: ${error}`);
 		watchlistArray = [];
 		resetLocalStorageWatchlist();
 	}
@@ -82,7 +82,7 @@ function removeFromWatchlist(movie) {
 	watchlistArray.splice(watchlistIndex, 1);
 }
 
-function addToWatchList(movie, detailsDiv) {
+function addToWatchList(movie) {
 	// change watchlist status in object in resultsArray
 	if (document.getElementById('search-page')) {
 		let resultsIndex = getResultsIndex(movie.imdbID);

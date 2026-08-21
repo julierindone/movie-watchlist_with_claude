@@ -82,7 +82,6 @@ export async function handleMoreDetailsClick(eTarget) {
 	let data = await fetch.fetchFromImdbId(imdbID, eTarget);
 	// if it can't find the imdbId (like if it doesn't exist)
 	if (data.Response === "False") {
-		let moreDetailsDiv = eTarget.parentElement.querySelector('details-div');
 		generateMoreDetailsError(eTarget);
 		console.error("Response was false.");
 	}
