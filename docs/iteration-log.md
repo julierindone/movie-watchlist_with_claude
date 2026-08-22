@@ -1,7 +1,7 @@
 # Iteration Log
 
 ## Run 001 -- 8/22/26 -- Baseline
-- **Agent/Tool used:** {Agent/Tool}
+- **Agent/Tool used:** Claude Code
 - **Task:** Estimate current test coverage and identify one area with weak coverage.  
 - **Full prompt:** 
   - Run the project's test suite with coverage reporting enabled (e.g., `npx vitest run --coverage`). 
@@ -11,27 +11,28 @@
   - Do not write or modify any test or source files. 
 
 ### Rubric Scores:
-| Dimension                   | Score (1-4) | Notes                       |
-| --------------------------- | ----------- | --------------------------- |
-| Coverage Reporting Accuracy |      |                |
-| File Selection Quality      |      |                |
-| Justification Consistency   |      |                |
-| Total                       | {X / Y}     | Pass threshold: {threshold} |
+| Dimension                   | Score (1-4) | Notes                                                                                                                            |
+| --------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Coverage Reporting Accuracy | 4           |                                                                                                                                  |
+| File Selection Quality      | 4           | Picked a file with high importance that has real flaws                                                                           |
+| Justification Consistency   | 4           | Brought up already-identified weaknesses (that would've been caught by tests) and explained potential consequences if not fixed. |
+| Total                       | 12 / 12     | Pass threshold: 3 on each                                                                                                        |
 
 ### Measurements:
-- Cycle time: {X min Y sec}
-- Review latency: {X min}
-- Cost per run: ${X.XX} ({token input} in / {token output} out)
+- Cycle time: 18:24
+- Review latency: 16 min
+- Cost per run: $0.24 (243.4k in / 3.5k out)
 
-### Pass/Fail: {Pass / Fail}
+### Pass/Fail: 
+Pass
 
 ### Observations
 
 #### What worked
-{1-2 sentences about what worked} 
+The agent did exactly what I told it to do.It explained all decisions and took into account not only the severity of errors that could be caused by a couple of bug I had TODOs written in the file if I do not fix them, when weighing that file's testing need against others. Also, I'd never used the test coverage functionality before, so I checked in afterward to ensure I understood the coverage test results. This slowed down the review process for this run.
 
 #### What failed
-{1-2 sentences about what failed}
+I had an issue with an npm package I had to install separately (for some reason) and had to start over.
 
 #### Changes made:
-{what changed since last run}
+None - Baseline
