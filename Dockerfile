@@ -44,7 +44,10 @@ RUN echo 'export PS1="ai-course:\\w# "' >> /root/.bashrc && \
 # Configure git name/email
 # Git identity
 RUN git config --global user.name "Julie Rindone" && \
-    git config --global user.email "julie.rindone@gmail.com"
+    git config --global user.email "julie.rindone@gmail.com" && \
+    git config --global core.autocrlf input && \
+    git config --global --add safe.directory /workspace
+
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["/bin/bash"]
