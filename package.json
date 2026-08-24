@@ -20,11 +20,10 @@
   },
   "homepage": "https://github.com/julierindone/movie-watchlist_with_claude#readme",
   "dependencies": {
-    "@vitest/coverage-v8": "^4.1.11",
     "vanilla-tilt": "^1.8.1",
     "vite": "^8.1.5"
   },
   "devDependencies": {
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }
