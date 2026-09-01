@@ -14,19 +14,16 @@ RUN apt-get update && apt-get install -y \
 # Install Claude Code
 RUN npm install -g @anthropic-ai/claude-code
 
-# Install OpenCode
-RUN npm install -g opencode-ai
+# Set up Claude Code configuration directory and copy settings template
+# NO SKILLS YET.
+# RUN mkdir -p /root/.claude/skills
+# COPY .claude/skills/ /root/.claude/skills/
 
-# Install ngrok  - keep for now.
-RUN curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
-    | tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
-    && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
-    | tee /etc/apt/sources.list.d/ngrok.list \
-    && apt-get update && apt-get install -y ngrok \
-    && rm -rf /var/lib/apt/lists/*
+# Copy agents into Claude Code agents directory
+RUN mkdir -p /root/.claude/agents
+COPY .claude/agents/ /root/.claude/agents/
 
 # Claude Code configuration: default settings + status line
-RUN mkdir -p /root/.claude
 COPY settings.json /root/.claude/settings.json
 COPY statusline.sh /root/.claude/statusline.sh
 RUN chmod +x /root/.claude/statusline.sh
@@ -49,7 +46,6 @@ RUN git config --global user.name "Julie Rindone" && \
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm install
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["/bin/bash"]
