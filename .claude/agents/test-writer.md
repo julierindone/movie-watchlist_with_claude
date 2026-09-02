@@ -3,7 +3,7 @@ name: test-writer
 description: Test-writer agent — invokes vitest to create tests for new JavaScript functions. 
 tools: Read, Write, Bash
 model: inherit
-permissionMode: default
+permissionMode: acceptEdits
 skills: find-untested-functions
 version: v0.1.0
 ---
