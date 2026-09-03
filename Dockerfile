@@ -15,9 +15,8 @@ RUN apt-get update && apt-get install -y \
 RUN npm install -g @anthropic-ai/claude-code
 
 # Set up Claude Code configuration directory and copy settings template
-# NO SKILLS YET.
-# RUN mkdir -p /root/.claude/skills
-# COPY .claude/skills/ /root/.claude/skills/
+RUN mkdir -p /root/.claude/skills
+COPY .claude/skills/ /root/.claude/skills/
 
 # Copy agents into Claude Code agents directory
 RUN mkdir -p /root/.claude/agents
