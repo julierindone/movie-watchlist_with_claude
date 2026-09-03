@@ -1,4 +1,5 @@
 # Quality Rubric: test-writer Agent
+v0.1.1
 
 ## 1.1 Dimensions
 
@@ -103,9 +104,11 @@ Measures whether the agent actually ran vitest and accurately reported pass/fail
 
 ## Pass Threshold
 
-A run is passing if it scores **3 or higher on all five dimensions**, with a total of **15/20 or higher**.
+A run is passing if:
+1. It scores **3 or higher on all five dimensions**, with a total of **15/20 or higher**.
+2. Vitest has been run and tests are passing.
 
-**Reasoning:** Test Correctness and Mocking Discipline are floors — tests that don't check real behavior or that hit live APIs aren't safe to keep regardless of how complete coverage looks. Self-Verification is also a floor, since an agent that doesn't confirm its own output actually works undermines the entire point of automating this task. The aggregate minimum catches a run that clears 3 everywhere but is mediocre overall.
+**Reasoning:** Test Correctness and Mocking Discipline are floors — tests that don't check real behavior or that hit live APIs aren't safe to keep regardless of how complete coverage looks. Self-Verification is also a floor, since an agent that doesn't confirm its own output actually works undermines the entire point of automating this task. The aggregate minimum catches a run that clears 3 everywhere but is mediocre overall. *Added after Run 001:* Regardless of score, the tests must be run in order for  to receive a passing grade - the run is worth nothing if the the newly created tests can't be verified.
 
 ---
 
