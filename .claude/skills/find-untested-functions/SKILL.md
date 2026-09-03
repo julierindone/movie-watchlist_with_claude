@@ -1,6 +1,8 @@
 ---
 name: find-untested-functions
 description: Compare each fileName.js against its fileName.test.js to identify functions that vitest has no test for yet. Use when checking test coverage gaps before writing new vitest tests, or as a step in an agent that generates tests for new/changed functions.
+tools: Read
+permissionMode: inherit
 ---
 
 For each source file (e.g. `src/foo.js`), find its paired test file (`src/foo.test.js`, same directory/basename) and report which functions in the source file are not yet covered by that test file.
