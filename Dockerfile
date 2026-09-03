@@ -45,6 +45,7 @@ RUN git config --global user.name "Julie Rindone" && \
 
 COPY package.json .
 COPY package-lock.json .
+RUN npm install
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["/bin/bash"]
