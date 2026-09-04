@@ -80,4 +80,5 @@ Pass
 Agent: Add requirement for mocking to mimic realistic failure-shape diversity.
 
 #### Changes made:
-Pending
+*Change made, but not tested:*
+- Fix 1 (needs diverse failure shapes): 5c36cc2 — agent: test-writer.md v0.1.1
