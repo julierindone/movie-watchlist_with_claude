@@ -36,4 +36,7 @@
 - Fix issue with node packages - verification
 
 #### Changes made:
-None - Baseline
+- Fix 1 (Added test verification req to rubric): 06c1dcd — rubric v0.1.1
+- Fix 2 (Added npm install to Dockerfile): 7301b50 - Dockerfile
+
+**Also worth mentioning:** I've decided the requirement for a *4* on coverage completeness to include a run-down of all untestable functions would be an unnecessary token drain and clutter up the summary without much value; it would be cumulative on every run as the project grows. Would be better to check occasionally as a prompt or skill; doesn't need to be included here. I'm leaving it on the rubric for now since not a high priority change, and it's poor practice to change the rubric after testing has begun.
