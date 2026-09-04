@@ -209,3 +209,70 @@ describe('generateAddDetailsToWatchlistItemError', () => {
 		expect(() => generateAddDetailsToWatchlistItemError(undefined)).toThrow();
 	});
 });
+
+import { generateFuzzyResultsHtml, renderHtml } from './render.js';
+
+describe('generateFuzzyResultsHtml', () => {
+	it('renders a card for each movie in the results for a normal fuzzy search', () => {
+		generateFuzzyResultsHtml([createFakeMovie(), createFakeMovie({ imdbID: 'tt0000002', title: 'Say Anything 2' })]);
+
+		expect(mainWrapper.innerHTML).toContain('fuzzy-results');
+		expect(mainWrapper.innerHTML).toContain('Say Anything');
+		expect(mainWrapper.innerHTML).toContain('Say Anything 2');
+		expect(toggleMainSection).toHaveBeenCalled();
+	});
+
+	it('shows a check icon instead of a plus icon for a movie already on the watchlist', () => {
+		generateFuzzyResultsHtml([createFakeMovie({ watchlist: true })]);
+
+		expect(mainWrapper.innerHTML).toContain('fa-circle-check');
+	});
+
+	it('renders an empty card list (no markup) for an empty results array (no matches found)', () => {
+		generateFuzzyResultsHtml([]);
+
+		expect(mainWrapper.innerHTML).toBe('');
+		expect(toggleMainSection).toHaveBeenCalled();
+	});
+
+	it('throws for invalid input where the results array is missing entirely', () => {
+		expect(() => generateFuzzyResultsHtml(undefined)).toThrow();
+	});
+});
+
+describe('renderHtml', () => {
+	it('renders the exact-result card when searchType is "exact"', () => {
+		searchModule.searchType = 'exact';
+		searchModule.resultsArray.push(createFakeMovie());
+
+		renderHtml();
+
+		expect(mainWrapper.innerHTML).toContain('Say Anything');
+		expect(mainWrapper.innerHTML).not.toContain('fuzzy-results');
+	});
+
+	it('renders the fuzzy-results cards when searchType is "fuzzy"', () => {
+		searchModule.searchType = 'fuzzy';
+		searchModule.resultsArray.push(createFakeMovie(), createFakeMovie({ imdbID: 'tt0000002', title: 'Say Anything 2' }));
+
+		renderHtml();
+
+		expect(mainWrapper.innerHTML).toContain('fuzzy-results');
+		expect(mainWrapper.innerHTML).toContain('Say Anything 2');
+	});
+
+	it('falls back to the (empty) watchlist space-saver view when searchType is neither "exact" nor "fuzzy" and the watchlist is empty', () => {
+		searchModule.searchType = null;
+
+		renderHtml();
+
+		expect(resetAll).toHaveBeenCalled();
+		expect(getSpaceSaver).toHaveBeenCalledWith('watchlist');
+	});
+
+	it('throws for invalid state: searchType is "exact" but there are no results to read', () => {
+		searchModule.searchType = 'exact';
+
+		expect(() => renderHtml()).toThrow();
+	});
+});

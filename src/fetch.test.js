@@ -140,3 +140,46 @@ describe('toMovieArray', () => {
 		expect(() => toMovieArray('fuzzy', undefined)).toThrow();
 	});
 });
+
+import { fetchExact } from './fetch.js';
+
+describe('fetchExact', () => {
+	it('resolves with the parsed JSON body for a normal exact-title lookup', async () => {
+		const movie = { Title: 'Say Anything', imdbID: 'tt0098258', Response: 'True' };
+		global.fetch.mockResolvedValue({ json: () => Promise.resolve(movie) });
+
+		const result = await fetchExact('Say Anything');
+
+		expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('https://omdbapi.com/?t=Say Anything&apikey='));
+		expect(result).toEqual(movie);
+	});
+
+	it('resolves with a "not found" style payload when the exact title has no match', async () => {
+		const noMatch = { Response: 'False', Error: 'Movie not found!' };
+		global.fetch.mockResolvedValue({ json: () => Promise.resolve(noMatch) });
+
+		const result = await fetchExact('asdkjhaslkdjh');
+
+		expect(result).toEqual(noMatch);
+	});
+
+	it('logs the error and triggers the space-saver error state when the network request fails', async () => {
+		global.fetch.mockRejectedValue(new TypeError('Failed to fetch'));
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		const result = await fetchExact('Say Anything');
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(consoleSpy).toHaveBeenCalled();
+		expect(result).toBeUndefined();
+		consoleSpy.mockRestore();
+	});
+
+	it('still builds and sends a request when called with invalid/undefined input', async () => {
+		global.fetch.mockResolvedValue({ json: () => Promise.resolve({ Response: 'False' }) });
+
+		await fetchExact(undefined);
+
+		expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('https://omdbapi.com/?t=undefined&apikey='));
+	});
+});

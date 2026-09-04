@@ -85,3 +85,41 @@ describe('handleWatchlistIconClick', () => {
 		expect(renderHtml).toHaveBeenCalledWith(resultsArray, watchlistArray);
 	});
 });
+
+import { initLocalStorageWatchlist } from './watchlist.js';
+
+describe('initLocalStorageWatchlist', () => {
+	it('loads an existing, valid watchlist from localStorage into watchlistArray for a normal startup', () => {
+		const storedMovies = [createFullMovie('tt0098258'), createFullMovie('tt0000002')];
+		global.localStorage.store.watchlist = JSON.stringify(storedMovies);
+
+		initLocalStorageWatchlist();
+
+		expect(watchlistArray).toEqual(storedMovies);
+	});
+
+	it('initializes an empty watchlist in localStorage when none exists yet (first run / empty result)', () => {
+		const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+		initLocalStorageWatchlist();
+
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify([]));
+		expect(consoleSpy).toHaveBeenCalled();
+		consoleSpy.mockRestore();
+	});
+
+	it('throws instead of recovering when localStorage access itself fails (e.g. storage disabled/unavailable)', () => {
+		global.localStorage.getItem = vi.fn(() => { throw new Error('SecurityError: storage disabled'); });
+
+		expect(() => initLocalStorageWatchlist()).toThrow();
+	});
+
+	it('throws for invalid input: corrupted (non-JSON) data stored under the watchlist key', () => {
+		global.localStorage.store.watchlist = '{not valid json';
+
+		// Note: the initial null-check call to getLocalStorageWatchlist() (line 27) sits
+		// outside the try/catch, so a JSON.parse failure here throws immediately instead
+		// of being caught and recovered by the catch block below it.
+		expect(() => initLocalStorageWatchlist()).toThrow();
+	});
+});
