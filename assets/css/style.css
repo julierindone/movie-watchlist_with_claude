@@ -1,11 +1,11 @@
 :root {
-  --white: hsl(0deg 0% 90.68%);
+  --white: hsl(0 0% 95% / 1);
   --gray: hsl(0, 0%, 7.5%);
   --medium-gray: hsl(0, 0%, 14%);
   --light-gray: hsl(0, 0%, 52%);
   --black: #101010;
-  --light-ice-blue: hsl(190 40.15% 67%);
-  --ice-blue: hsl(190, 35%, 45%);
+  --light-ice-blue: hsl(190 40.15% 80%);
+  --ice-blue: hsl(190, 35%, 55%);
   --transp-ice-blue: hsl(187, 28%, 49%, 60%);
   --yellow: hsl(52, 100%, 50%);
   --black-text-shadow: 3px 3px 1px var(--black), 1.15px -1.15px 1px var(--black), -1.15px 1.15px 1px var(--black), -1.15px -1.15px 1px var(--black);
@@ -127,7 +127,7 @@ header {
     backdrop-filter: contrast(.65) blur(1px) brightness(.34);
     padding-inline: 0.8em;
     padding-block: min(1.5vh, 1rem);
-    align-content: center;
+    /* align-content: center; */ /* FYI: was causing clutter when zooming 150+. Not the only problem with it, but a temp fix. */
   }
 }
 
@@ -144,7 +144,7 @@ header {
 
 form {
   display: flex;
-  gap: 0.45em;
+  gap: 0.65em;
   flex-flow: column wrap;
   align-self: end;
   justify-self: center;
@@ -155,7 +155,7 @@ form {
   display: flex;
   background-color: var(--white);
   justify-content: space-between;
-  opacity: .85;
+  opacity: .875;
   border: var(--ice-blue-border);
   border-radius: 8px;
   padding-inline: 0.5rem 0.2rem;
@@ -196,7 +196,7 @@ form {
 
 #search-types {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
   align-items: center;
   font-size: clamp(0.75rem, 0.53rem + 1vw, 0.9rem);
@@ -211,6 +211,11 @@ form {
   & label {
     text-shadow: 1px 1px 2px black;
     text-wrap: nowrap;
+  }
+
+  & input[type="radio" i] {
+    accent-color: var(--ice-blue);
+    margin-right: .275rem;
   }
 }
 
@@ -259,9 +264,13 @@ form {
   font-size: 1rem;
 }
 
-i:hover,
-div.type-choice:hover,
-div.type-choice > *:hover {
+i.fa-circle-plus,
+i.fa-circle-check,
+div.type-choice,
+div.type-choice > *,
+summary,
+button,
+a {
   cursor: pointer;
 }
 
@@ -297,7 +306,7 @@ div.type-choice > *:hover {
     padding-bottom: unset;
 
     > #search-bar-wrapper {
-      flex: 8 1 150px;
+      flex: 1 1 150px;
       opacity: 0.8;
       padding-block: 0.35em;
     }
@@ -305,7 +314,6 @@ div.type-choice > *:hover {
     #search-types {
       justify-content: end;
       flex-wrap: nowrap;
-      flex: 1 1 205px;
     }
   }
 
