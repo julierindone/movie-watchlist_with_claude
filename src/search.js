@@ -31,7 +31,7 @@ export async function searchMovies() {
 	// validate data - for when title(s) not found in API
 	if (data.Response.toLowerCase() === "false") {
 		helpers.getSpaceSaver('no_matches');
-		console.error("Title not found.")
+		console.error("Title not found.");
 		return;
 	}
 
@@ -74,20 +74,26 @@ export function handleImageError(brokenImage) {
 
 // Click handler for a result's "more details" control: looks up the full
 // movie record by IMDb ID and renders an expanded details view for it.
-// TODO: add error message back in here in next commit. Return might have been messing things up.
-// TODO: Refactor to use details tag
+// TODO: Refactor to use details tag (HUH? Can't remember what I meant by this)
 export async function handleMoreDetailsClick(eTarget) {
-	const imdbID = eTarget.attributes[1].value;
+	const imdbID = eTarget.dataset.imdbId;
 
-	let data = await fetch.fetchFromImdbId(imdbID, eTarget);
-	// if it can't find the imdbId (like if it doesn't exist)
-	if (data.Response === "False") {
-		generateMoreDetailsError(eTarget);
-		console.error("Response was false.");
+	try {
+		let data = await fetch.fetchFromImdbId(imdbID);
+
+		if (data.Response === "False") {
+			generateMoreDetailsError(eTarget);
+			return null;
+		}
+
+		movieDetails = createMovieObject(data);
+		generateMoreDetails(eTarget, movieDetails);
 	}
 
-	movieDetails = createMovieObject(data);
-	generateMoreDetails(eTarget, movieDetails);
+	catch {
+		generateMoreDetailsError(eTarget);
+		return null;
+	}
 }
 
 // Click handler for a result's "less details" control: collapses the

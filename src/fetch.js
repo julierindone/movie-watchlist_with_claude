@@ -1,5 +1,4 @@
 import { getSpaceSaver } from "./helpers.js";
-import { generateAddDetailsToWatchlistItemError, generateMoreDetailsError } from './render.js';
 
 const apiKey = import.meta.env.VITE_OMDB_API_KEY;
 
@@ -27,22 +26,12 @@ export async function fetchFuzzy(query) {
 	}
 }
 
-export async function fetchFromImdbId(imdbID, errorMessageDiv) {
+export async function fetchFromImdbId(imdbID) {
 	let url = `https://omdbapi.com/?i=${imdbID}&apikey=${apiKey}`;
+	const response = await fetch(url);
 
-	try {
-		const response = await fetch(url);
-		return response.json();
-	}
-	catch (error) {
-		if (errorMessageDiv.classList.contains('details-div')) {
-			generateAddDetailsToWatchlistItemError(errorMessageDiv);
-		}
-		else {
-			generateMoreDetailsError(errorMessageDiv);
-		}
-		console.error(error);
-	}
+	if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+	return response.json();
 }
 
 export function toMovieArray(searchType, data) {

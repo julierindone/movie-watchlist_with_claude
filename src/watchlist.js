@@ -1,12 +1,8 @@
-// TODO: Fix!
-// watchlist.js:117-128 — processWatchlistAdd has no return in its if (data.Response === "False") branch, so it implicitly returns undefined. If an OMDb detail lookup ever fails, movie becomes undefined and the next line (addToWatchList(movie, ...)) throws.
-// watchlist.js: 126 — createMovieObject(data) is called without the watchlistStatus second argument(unlike every other call site), leaving movie.watchlist briefly undefined before it's overwritten.;
-
 import { resultsArray } from "./search.js";
-import { generateAddDetailsToWatchlistItemError, renderHtml } from "./render.js";
+import { addDetailsToWatchlistItemError, renderHtml } from "./render.js";
 import { createMovieObject } from "./normalize.js";
 import { fetchFromImdbId } from "./fetch.js";
-
+import { getSpaceSaver } from "./helpers.js";
 export let watchlistArray = [];
 
 // get list from localStorage
@@ -48,6 +44,10 @@ export function initLocalStorageWatchlist() {
 
 export async function handleWatchlistIconClick(eTarget) {
 	let movie = getClickedMovie(eTarget.dataset.imdbId);
+	if (movie == null) {
+		getSpaceSaver('error');
+		return null;
+	}
 	let detailsDiv = eTarget.closest('.movie-details').querySelector('.details-div');
 
 	// add or remove as needed
@@ -59,12 +59,15 @@ export async function handleWatchlistIconClick(eTarget) {
 		if (!movie.genre) {
 			movie = await processWatchlistAdd(movie, detailsDiv);
 		}
-		addToWatchList(movie, detailsDiv);
+		if (movie != null) {
+			addToWatchList(movie, detailsDiv);
+		}
 	}
 
 	// set localStorage to match updated watchlist
 	setLocalStorageWatchlist();
 
+	// FIX LATER: this is clobbering the error messages.
 	// render content based on type of list
 	renderHtml(resultsArray, watchlistArray);
 }
@@ -119,14 +122,22 @@ function getResultsIndex(movieImdbID) {
 }
 
 async function processWatchlistAdd(movie, detailsDiv) {
-	let data = await fetchFromImdbId(movie.imdbID, detailsDiv);
-
-	// check if data response failed
-	if (data.Response === "False") {
-		generateAddDetailsToWatchlistItemError(detailsDiv, data.Response);
-		console.error("Response was false.");
+	try {
+		let data = await fetchFromImdbId(movie.imdbID);
+		let response = data.Response;
+		if (response === "False") {
+			// OMdb-level failure. Ex: invalid ImdbID
+			addDetailsToWatchlistItemError(detailsDiv, true);
+			// Still adds the movie to the watchlist sans details, so it just returns the original movie object.
+			return movie;
+		}
+		else {
+			return createMovieObject(data, true);
+		}
 	}
-	else {
-		return createMovieObject(data);
+	catch {
+		// Movie not added (Could add anyway in localstorage, but not a db). Ex: Network down or invalid API key.
+		addDetailsToWatchlistItemError(detailsDiv);
+		return null;
 	}
 }
