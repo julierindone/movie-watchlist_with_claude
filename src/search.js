@@ -23,29 +23,34 @@ export async function searchMovies() {
 	setSearchType(getSearchType());
 	helpers.resetAll();
 
-	// fetch data
-	let data = searchType === "exact"
-		? await fetch.fetchExact(query)
-		: await fetch.fetchFuzzy(query);
+	try {
+		// fetch data
+		let data = searchType === "exact"
+			? await fetch.fetchExact(query)
+			: await fetch.fetchFuzzy(query);
 
-	// validate data - for when title(s) not found in API
-	if (data.Response.toLowerCase() === "false") {
-		helpers.getSpaceSaver('no_matches');
-		console.error("Title not found.");
-		return;
+		// validate data - for when title(s) not found in API
+		if (data.Response.toLowerCase() === "false") {
+			helpers.getSpaceSaver('no_matches');
+			console.error("Title not found.");
+			return null;
+		}
+
+		// reassign data to be stored in arrays
+		data = fetch.toMovieArray(searchType, data);
+
+		// create normalized array of movies
+		resultsArray = data.map(movie => createMovieObject(movie, onWatchlist(movie.imdbID)));
+
+		// create html by type
+		searchType === "exact"
+			? generateExactResultHtml(resultsArray)
+			: generateFuzzyResultsHtml(resultsArray);
 	}
-
-	// reassign data to be stored in arrays
-	data = fetch.toMovieArray(searchType, data);
-
-	// create normalized array of movies
-	resultsArray = data.map(movie => createMovieObject(movie, onWatchlist(movie.imdbID)));
-
-	// TODO: Couldn't I be calling renderHTML from here?
-	// create html by type
-	searchType === "exact"
-		? generateExactResultHtml(resultsArray)
-		: generateFuzzyResultsHtml(resultsArray);
+	catch {
+		helpers.getSpaceSaver('error');
+		return null;
+	}
 }
 
 // Inspects the checked radio button among the 'search-type' inputs to figure
