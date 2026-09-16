@@ -1,16 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./helpers.js', () => ({
-	getSpaceSaver: vi.fn(),
-}));
-
-vi.mock('./render.js', () => ({
-	generateAddDetailsToWatchlistItemError: vi.fn(),
-	generateMoreDetailsError: vi.fn(),
-}));
-
-import { getSpaceSaver } from './helpers.js';
-import { generateAddDetailsToWatchlistItemError, generateMoreDetailsError } from './render.js';
 import { fetchFuzzy, fetchFromImdbId, toMovieArray } from './fetch.js';
 
 beforeEach(() => {
@@ -21,7 +10,7 @@ beforeEach(() => {
 describe('fetchFuzzy', () => {
 	it('resolves with the parsed JSON body (a Search array) for a normal lookup', async () => {
 		const results = { Response: 'True', Search: [{ Title: 'Say Anything', imdbID: 'tt0098258' }] };
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve(results) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(results) });
 
 		const result = await fetchFuzzy('Say Anything');
 
@@ -31,27 +20,27 @@ describe('fetchFuzzy', () => {
 
 	it('resolves with a "not found" style payload when nothing matches', async () => {
 		const noMatch = { Response: 'False', Error: 'Movie not found!' };
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve(noMatch) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(noMatch) });
 
 		const result = await fetchFuzzy('asdkjhaslkdjh');
 
 		expect(result).toEqual(noMatch);
 	});
 
-	it('logs the error and triggers the space-saver error state when the network request fails', async () => {
+	it('rejects when the network request fails', async () => {
 		global.fetch.mockRejectedValue(new TypeError('Failed to fetch'));
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-		const result = await fetchFuzzy('Say Anything');
+		await expect(fetchFuzzy('Say Anything')).rejects.toThrow();
+	});
 
-		expect(getSpaceSaver).toHaveBeenCalledWith('error');
-		expect(consoleSpy).toHaveBeenCalled();
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
+	it('rejects when the response is not ok', async () => {
+		global.fetch.mockResolvedValue({ ok: false, status: 500 });
+
+		await expect(fetchFuzzy('Say Anything')).rejects.toThrow('Fetch failed: 500');
 	});
 
 	it('still builds and sends a request when called with invalid/undefined input', async () => {
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve({ Response: 'False' }) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ Response: 'False' }) });
 
 		await fetchFuzzy(undefined);
 
@@ -60,17 +49,11 @@ describe('fetchFuzzy', () => {
 });
 
 describe('fetchFromImdbId', () => {
-	function createFakeErrorTarget(isDetailsDiv) {
-		return {
-			classList: { contains: vi.fn(className => isDetailsDiv && className === 'details-div') },
-		};
-	}
-
 	it('resolves with the parsed JSON body for a normal lookup by imdbID', async () => {
 		const movie = { Title: 'Say Anything', imdbID: 'tt0098258', Response: 'True' };
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve(movie) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(movie) });
 
-		const result = await fetchFromImdbId('tt0098258', createFakeErrorTarget(false));
+		const result = await fetchFromImdbId('tt0098258');
 
 		expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('https://omdbapi.com/?i=tt0098258&apikey='));
 		expect(result).toEqual(movie);
@@ -78,46 +61,23 @@ describe('fetchFromImdbId', () => {
 
 	it('resolves with a "not found" style payload for an imdbID with no match', async () => {
 		const noMatch = { Response: 'False', Error: 'Incorrect IMDb ID.' };
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve(noMatch) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(noMatch) });
 
-		const result = await fetchFromImdbId('tt0000000', createFakeErrorTarget(false));
+		const result = await fetchFromImdbId('tt0000000');
 
 		expect(result).toEqual(noMatch);
 	});
 
-	it('renders the watchlist-item error UI when the error target is a details-div and the request fails', async () => {
+	it('rejects when the network request fails', async () => {
 		global.fetch.mockRejectedValue(new TypeError('Failed to fetch'));
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		const detailsDiv = createFakeErrorTarget(true);
 
-		const result = await fetchFromImdbId('tt0098258', detailsDiv);
-
-		expect(generateAddDetailsToWatchlistItemError).toHaveBeenCalledWith(detailsDiv);
-		expect(generateMoreDetailsError).not.toHaveBeenCalled();
-		expect(consoleSpy).toHaveBeenCalled();
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
+		await expect(fetchFromImdbId('tt0098258')).rejects.toThrow();
 	});
 
-	it('renders the generic more-details error UI when the error target is not a details-div and the request fails', async () => {
-		global.fetch.mockRejectedValue(new TypeError('Failed to fetch'));
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		const summaryEl = createFakeErrorTarget(false);
+	it('rejects when the response is not ok', async () => {
+		global.fetch.mockResolvedValue({ ok: false, status: 404 });
 
-		const result = await fetchFromImdbId('tt0098258', summaryEl);
-
-		expect(generateMoreDetailsError).toHaveBeenCalledWith(summaryEl);
-		expect(generateAddDetailsToWatchlistItemError).not.toHaveBeenCalled();
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
-	});
-
-	it('throws for invalid input (no error target element to inspect) when the request fails', async () => {
-		global.fetch.mockRejectedValue(new TypeError('Failed to fetch'));
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-		await expect(fetchFromImdbId('tt0098258', undefined)).rejects.toThrow();
-		consoleSpy.mockRestore();
+		await expect(fetchFromImdbId('tt0098258')).rejects.toThrow('Fetch failed: 404');
 	});
 });
 
@@ -146,7 +106,7 @@ import { fetchExact } from './fetch.js';
 describe('fetchExact', () => {
 	it('resolves with the parsed JSON body for a normal exact-title lookup', async () => {
 		const movie = { Title: 'Say Anything', imdbID: 'tt0098258', Response: 'True' };
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve(movie) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(movie) });
 
 		const result = await fetchExact('Say Anything');
 
@@ -156,27 +116,27 @@ describe('fetchExact', () => {
 
 	it('resolves with a "not found" style payload when the exact title has no match', async () => {
 		const noMatch = { Response: 'False', Error: 'Movie not found!' };
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve(noMatch) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(noMatch) });
 
 		const result = await fetchExact('asdkjhaslkdjh');
 
 		expect(result).toEqual(noMatch);
 	});
 
-	it('logs the error and triggers the space-saver error state when the network request fails', async () => {
+	it('rejects when the network request fails', async () => {
 		global.fetch.mockRejectedValue(new TypeError('Failed to fetch'));
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-		const result = await fetchExact('Say Anything');
+		await expect(fetchExact('Say Anything')).rejects.toThrow();
+	});
 
-		expect(getSpaceSaver).toHaveBeenCalledWith('error');
-		expect(consoleSpy).toHaveBeenCalled();
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
+	it('rejects when the response is not ok', async () => {
+		global.fetch.mockResolvedValue({ ok: false, status: 500 });
+
+		await expect(fetchExact('Say Anything')).rejects.toThrow('Fetch failed: 500');
 	});
 
 	it('still builds and sends a request when called with invalid/undefined input', async () => {
-		global.fetch.mockResolvedValue({ json: () => Promise.resolve({ Response: 'False' }) });
+		global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ Response: 'False' }) });
 
 		await fetchExact(undefined);
 

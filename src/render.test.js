@@ -27,7 +27,6 @@ import {
 	generateWatchlistHtml,
 	generateMoreDetails,
 	generateMoreDetailsError,
-	generateAddDetailsToWatchlistItemError,
 } from './render.js';
 
 function createFakeElement() {
@@ -170,46 +169,6 @@ describe('generateMoreDetailsError', () => {
 	});
 });
 
-describe('generateAddDetailsToWatchlistItemError', () => {
-	function createFakeDetailsDiv() {
-		return {
-			innerHTML: '',
-			previousElementSibling: { style: {} },
-			parentElement: { setAttribute: vi.fn() },
-		};
-	}
-
-	it('shows the "missing details" message only when addedToList is literally the string "true"', () => {
-		const detailsDiv = createFakeDetailsDiv();
-
-		generateAddDetailsToWatchlistItemError(detailsDiv, 'true');
-
-		expect(detailsDiv.innerHTML).toContain('missing some details');
-		expect(detailsDiv.previousElementSibling.style.display).toBe('none');
-		expect(detailsDiv.parentElement.setAttribute).toHaveBeenCalledWith('open', '');
-	});
-
-	it('shows the generic failure message for the default (boolean true) addedToList value', () => {
-		const detailsDiv = createFakeDetailsDiv();
-
-		generateAddDetailsToWatchlistItemError(detailsDiv);
-
-		expect(detailsDiv.innerHTML).toContain('has not been added to your watchlist');
-	});
-
-	it('shows the generic failure message when addedToList reflects a failed ("False") API response', () => {
-		const detailsDiv = createFakeDetailsDiv();
-
-		generateAddDetailsToWatchlistItemError(detailsDiv, 'False');
-
-		expect(detailsDiv.innerHTML).toContain('has not been added to your watchlist');
-	});
-
-	it('throws for invalid input where detailsDiv is missing entirely', () => {
-		expect(() => generateAddDetailsToWatchlistItemError(undefined)).toThrow();
-	});
-});
-
 import { generateFuzzyResultsHtml, renderHtml } from './render.js';
 
 describe('generateFuzzyResultsHtml', () => {
@@ -274,5 +233,50 @@ describe('renderHtml', () => {
 		searchModule.searchType = 'exact';
 
 		expect(() => renderHtml()).toThrow();
+	});
+});
+
+import { addDetailsToWatchlistItemError } from './render.js';
+
+describe('addDetailsToWatchlistItemError', () => {
+	function createFakeDetailsDiv() {
+		return {
+			innerHTML: '',
+			previousElementSibling: { style: {} },
+			parentElement: { setAttribute: vi.fn() },
+		};
+	}
+
+	it('shows the "missing details" message, hides the summary, and opens the details for a normal call with addedToWatchlist=true', () => {
+		const detailsDiv = createFakeDetailsDiv();
+
+		addDetailsToWatchlistItemError(detailsDiv, true);
+
+		expect(detailsDiv.innerHTML).toContain('has been added to your watchlist');
+		expect(detailsDiv.innerHTML).toContain('missing some details');
+		expect(detailsDiv.previousElementSibling.style.display).toBe('none');
+		expect(detailsDiv.parentElement.setAttribute).toHaveBeenCalledWith('open', '');
+	});
+
+	it('shows the generic failure message (movie not added) when addedToWatchlist is false', () => {
+		const detailsDiv = createFakeDetailsDiv();
+
+		addDetailsToWatchlistItemError(detailsDiv, false);
+
+		expect(detailsDiv.innerHTML).toContain('Something has gone wrong');
+		expect(detailsDiv.innerHTML).toContain('has not been added to your watchlist');
+		expect(detailsDiv.innerHTML).not.toContain('missing some details');
+	});
+
+	it('shows the generic failure message when addedToWatchlist is omitted entirely (undefined)', () => {
+		const detailsDiv = createFakeDetailsDiv();
+
+		addDetailsToWatchlistItemError(detailsDiv);
+
+		expect(detailsDiv.innerHTML).toContain('Something has gone wrong');
+	});
+
+	it('throws for invalid input when detailsDiv is missing entirely', () => {
+		expect(() => addDetailsToWatchlistItemError(undefined, true)).toThrow();
 	});
 });

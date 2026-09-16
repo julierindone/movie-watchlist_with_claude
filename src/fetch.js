@@ -1,5 +1,3 @@
-import { getSpaceSaver } from "./helpers.js";
-
 const apiKey = import.meta.env.VITE_OMDB_API_KEY;
 
 export async function fetchExact(query) {

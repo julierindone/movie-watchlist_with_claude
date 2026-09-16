@@ -114,12 +114,16 @@ describe('searchMovies', () => {
 		consoleSpy.mockRestore();
 	});
 
-	it('rejects when the underlying fetch call fails (network/API failure)', async () => {
+	it('shows the generic error state and does not render when the underlying fetch call fails (network/API failure)', async () => {
 		setRadioType('exact');
 		searchBarEl.value = 'Say Anything';
 		fetchExact.mockRejectedValue(new TypeError('Failed to fetch'));
 
-		await expect(searchMovies()).rejects.toThrow();
+		const result = await searchMovies();
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(generateExactResultHtml).not.toHaveBeenCalled();
+		expect(result).toBeNull();
 	});
 
 	it('throws for invalid input when the search bar has no readable value', async () => {
@@ -154,7 +158,7 @@ describe('handleImageError', () => {
 
 describe('handleMoreDetailsClick', () => {
 	function createFakeTarget(imdbID) {
-		return { attributes: [{}, { value: imdbID }] };
+		return { dataset: { imdbId: imdbID } };
 	}
 
 	it('fetches and renders expanded details for a normal lookup', async () => {
@@ -163,32 +167,27 @@ describe('handleMoreDetailsClick', () => {
 
 		await handleMoreDetailsClick(target);
 
-		expect(fetchFromImdbId).toHaveBeenCalledWith('tt0098258', target);
+		expect(fetchFromImdbId).toHaveBeenCalledWith('tt0098258');
 		expect(generateMoreDetails).toHaveBeenCalledWith(target, expect.objectContaining({ title: 'Say Anything' }));
 	});
 
-	it('renders the more-details error UI when the imdbID has no match, but (per current code) still renders details afterward', async () => {
+	it('renders the more-details error UI and does not render details when the imdbID has no match', async () => {
 		const target = createFakeTarget('tt0000000');
 		fetchFromImdbId.mockResolvedValue({ Response: 'False', Error: 'Incorrect IMDb ID.' });
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 		await handleMoreDetailsClick(target);
 
 		expect(generateMoreDetailsError).toHaveBeenCalledWith(target);
-		expect(consoleSpy).toHaveBeenCalled();
-		// Note: there's no `return` after the Response === "False" branch in
-		// handleMoreDetailsClick, so it falls through and still calls
-		// generateMoreDetails with the (failed) data - this asserts that real,
-		// current behavior rather than the presumably-intended one.
-		expect(generateMoreDetails).toHaveBeenCalledWith(target, expect.anything());
-		consoleSpy.mockRestore();
+		expect(generateMoreDetails).not.toHaveBeenCalled();
 	});
 
-	it('rejects when the details fetch fails (network/API failure)', async () => {
+	it('renders the more-details error UI when the details fetch fails (network/API failure)', async () => {
 		const target = createFakeTarget('tt0098258');
 		fetchFromImdbId.mockRejectedValue(new TypeError('Failed to fetch'));
 
-		await expect(handleMoreDetailsClick(target)).rejects.toThrow();
+		await handleMoreDetailsClick(target);
+
+		expect(generateMoreDetailsError).toHaveBeenCalledWith(target);
 	});
 
 	it('rejects for invalid input where the click target is missing entirely', async () => {
