@@ -117,6 +117,52 @@ function getWatchlistIndex(movieImdbID) {
 	return watchlistArray.findIndex(movie => movie.imdbID === movieImdbID);
 }
 
+// Sorts the watchlist by the chosen field, then re-renders the list.
+export function handleSortChange(sortType) {
+	sortWatchlistArray(sortType);
+	renderHtml();
+}
+
+// Mutates watchlistArray in place using the comparator for sortType.
+function sortWatchlistArray(sortType) {
+	if (sortType === 'title') {
+		watchlistArray.sort(compareByTitle);
+	}
+	else if (sortType === 'year') {
+		watchlistArray.sort(compareByYear);
+	}
+	else if (sortType === 'rating') {
+		watchlistArray.sort(compareByRating);
+	}
+}
+
+// Compares titles alphabetically, A to Z.
+function compareByTitle(movieA, movieB) {
+	return (movieA.title ?? '').localeCompare(movieB.title ?? '');
+}
+
+// Compares years numerically, newest to oldest.
+function compareByYear(movieA, movieB) {
+	return getYearValue(movieB.year) - getYearValue(movieA.year);
+}
+
+// Compares ratings numerically, highest to lowest.
+function compareByRating(movieA, movieB) {
+	return getRatingValue(movieB.rating) - getRatingValue(movieA.rating);
+}
+
+// Parses a year string into a number; missing years sort last.
+function getYearValue(year) {
+	let parsed = parseInt(year, 10);
+	return isNaN(parsed) ? -Infinity : parsed;
+}
+
+// Parses a percentage rating string into a number; missing ratings sort last.
+function getRatingValue(rating) {
+	let parsed = parseInt(rating, 10);
+	return isNaN(parsed) ? -Infinity : parsed;
+}
+
 function getResultsIndex(movieImdbID) {
 	return resultsArray.findIndex(movie => movie.imdbID === movieImdbID);
 }
