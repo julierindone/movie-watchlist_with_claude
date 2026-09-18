@@ -2,8 +2,14 @@ import { resultsArray } from "./search.js";
 import { addDetailsToWatchlistItemError, renderHtml } from "./render.js";
 import { createMovieObject } from "./normalize.js";
 import { fetchFromImdbId } from "./fetch.js";
-import { getSpaceSaver } from "./helpers.js";
+import { getSpaceSaver, getStoredPreference, setStoredPreference } from "./helpers.js";
 export let watchlistArray = [];
+
+// Key used to persist the chosen watchlist sort order.
+const SORT_STORAGE_KEY = 'watchlistSort';
+
+// Key used to persist the chosen watchlist genre filter.
+const FILTER_STORAGE_KEY = 'watchlistGenreFilter';
 
 // get list from localStorage
 function getLocalStorageWatchlist() {
@@ -67,6 +73,9 @@ export async function handleWatchlistIconClick(eTarget) {
 	// set localStorage to match updated watchlist
 	setLocalStorageWatchlist();
 
+	// refresh genre options in case adding/removing changed what's available
+	populateGenreFilterOptions();
+
 	// FIX LATER: this is clobbering the error messages.
 	// render content based on type of list
 	renderHtml(resultsArray, watchlistArray);
@@ -117,8 +126,14 @@ function getWatchlistIndex(movieImdbID) {
 	return watchlistArray.findIndex(movie => movie.imdbID === movieImdbID);
 }
 
-// Sorts the watchlist by the chosen field, then re-renders the list.
+// Reads the saved sort preference, defaulting to title if unset.
+export function getStoredSortPreference() {
+	return getStoredPreference(SORT_STORAGE_KEY, 'title');
+}
+
+// Sorts the watchlist by the chosen field, persists it, then re-renders.
 export function handleSortChange(sortType) {
+	setStoredPreference(SORT_STORAGE_KEY, sortType);
 	sortWatchlistArray(sortType);
 	renderHtml();
 }
@@ -161,6 +176,60 @@ function getYearValue(year) {
 function getRatingValue(rating) {
 	let parsed = parseInt(rating, 10);
 	return isNaN(parsed) ? -Infinity : parsed;
+}
+
+// Reads the saved genre filter, defaulting to "all" if unset.
+export function getStoredGenreFilter() {
+	return getStoredPreference(FILTER_STORAGE_KEY, 'all');
+}
+
+// Persists the chosen genre filter, then re-renders the list.
+export function handleFilterChange(genre) {
+	setStoredPreference(FILTER_STORAGE_KEY, genre);
+	renderHtml();
+}
+
+// Returns the watchlist narrowed to the saved genre, or the full list.
+export function getFilteredWatchlistArray() {
+	let genre = getStoredGenreFilter();
+	return genre === 'all'
+		? watchlistArray
+		: watchlistArray.filter(movie => getGenreList(movie.genre).includes(genre));
+}
+
+// Splits a comma-separated genre string into trimmed genre names.
+function getGenreList(genreString) {
+	return genreString ? genreString.split(',').map(genre => genre.trim()) : [];
+}
+
+// Builds the sorted list of unique genres present in the watchlist.
+function getAvailableGenres() {
+	let allGenres = watchlistArray.flatMap(movie => getGenreList(movie.genre));
+	return [...new Set(allGenres)].sort();
+}
+
+// Rebuilds the genre filter dropdown from genres in the watchlist.
+export function populateGenreFilterOptions() {
+	let filterSelect = document.getElementById('genre-filter-select');
+	if (!filterSelect) return;
+
+	let availableGenres = getAvailableGenres();
+	filterSelect.innerHTML = buildGenreOptionsHtml(availableGenres);
+
+	// Fall back to "all" if the saved genre no longer exists in the list.
+	let storedGenre = getStoredGenreFilter();
+	let validGenre = availableGenres.includes(storedGenre) ? storedGenre : 'all';
+	filterSelect.value = validGenre;
+	setStoredPreference(FILTER_STORAGE_KEY, validGenre);
+}
+
+// Builds the <option> markup for the genre filter dropdown.
+function buildGenreOptionsHtml(genres) {
+	let optionsHtml = '<option value="all">All Genres</option>';
+	genres.forEach(genre => {
+		optionsHtml += `<option value="${genre}">${genre}</option>`;
+	});
+	return optionsHtml;
 }
 
 function getResultsIndex(movieImdbID) {

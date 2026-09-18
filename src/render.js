@@ -1,5 +1,5 @@
 import { getSpaceSaver, toggleMainSection, resetAll } from './helpers.js';
-import { watchlistArray } from './watchlist.js';
+import { watchlistArray, getFilteredWatchlistArray } from './watchlist.js';
 import { resultsArray, searchType } from './search.js';
 import VanillaTilt from 'vanilla-tilt';
 
@@ -67,9 +67,18 @@ export function generateFuzzyResultsHtml(resultsArray) {
 
 export function generateWatchlistHtml() {
 	if (watchlistArray.length > 0) {
+		let filteredMovies = getFilteredWatchlistArray();
+
+		// genre filter is active but matches nothing in the watchlist
+		if (filteredMovies.length === 0) {
+			resetAll();
+			getSpaceSaver('no_genre_matches');
+			return;
+		}
+
 		let html = ``;
 
-		watchlistArray.forEach(movie => {
+		filteredMovies.forEach(movie => {
 			let rating = generateRatingHtml(movie.rating);
 			html +=
 				`<article class="movie-card">
