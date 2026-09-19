@@ -41,4 +41,4 @@ Nothing. Anything it was unsure about, it asked.
 No fixes, but will eventually need to be refactored to accommodate database storage instead of local, but I haven't added that yet.
 
 #### Changes made:
-None - Baseline 
+- Fix 1 (watchlist.hrml permission): 54993fb — agent: feature-builder v0.1.1
