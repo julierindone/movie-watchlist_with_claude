@@ -1,18 +1,29 @@
 import * as helpers from './src/helpers.js';
 import { searchMovies, handleImageError, handleMoreDetailsClick, handleLessDetailsClick } from './src/search.js';
-import { initLocalStorageWatchlist, handleWatchlistIconClick, handleSortChange, watchlistArray } from './src/watchlist.js';
+import {
+  initLocalStorageWatchlist,
+  handleWatchlistIconClick,
+  handleSortChange,
+  getStoredSortPreference,
+  handleFilterChange,
+  populateGenreFilterOptions,
+  watchlistArray
+} from './src/watchlist.js';
 
 const searchBarWrapper = document.getElementById('search-bar-wrapper');
 const searchForm = document.getElementById('search-form');
 const searchBar = document.getElementById('search-bar');
 const sortSelect = document.getElementById('sort-select');
+const genreFilterSelect = document.getElementById('genre-filter-select');
 
 // Check to see if watchlist exists in localStorage and create if it doesn't
 initLocalStorageWatchlist();
 
 if (document.getElementById('watchlist-page')) {
   if (watchlistArray.length > 0) {
-    // Sort by the dropdown's default value so the list matches the UI.
+    // Rebuild genre options, then restore the saved sort choice.
+    populateGenreFilterOptions();
+    sortSelect.value = getStoredSortPreference();
     handleSortChange(sortSelect.value);
   }
   else {
@@ -68,6 +79,12 @@ if (searchForm) {
 if (sortSelect) {
   sortSelect.addEventListener('change', () => {
     handleSortChange(sortSelect.value);
+  });
+}
+
+if (genreFilterSelect) {
+  genreFilterSelect.addEventListener('change', () => {
+    handleFilterChange(genreFilterSelect.value);
   });
 }
 
