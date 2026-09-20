@@ -45,8 +45,9 @@ document.addEventListener('click', (event) => {
     // generateFuzzyResultsHtml();
   }
   // ADD TO WATCHLIST
+  // TODO: Use regex to simplify condition
   else if (event.target.dataset.imdbId) {
-    if (event.target.classList.contains('fa-solid')) {
+    if (event.target.classList.contains('fa-circle-check') || event.target.classList.contains('fa-circle-plus')) {
       handleWatchlistIconClick(event.target);
     }
     // MORE DETAILS
