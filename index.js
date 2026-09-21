@@ -3,6 +3,7 @@ import { searchMovies, handleImageError, handleMoreDetailsClick, handleLessDetai
 import {
   initLocalStorageWatchlist,
   handleWatchlistIconClick,
+  handleWatchedIconClick,
   handleSortChange,
   getStoredSortPreference,
   handleFilterChange,
@@ -49,6 +50,10 @@ document.addEventListener('click', (event) => {
   else if (event.target.dataset.imdbId) {
     if (event.target.classList.contains('fa-circle-check') || event.target.classList.contains('fa-circle-plus')) {
       handleWatchlistIconClick(event.target);
+    }
+    // MARK AS WATCHED
+    else if (event.target.classList.contains('fa-eye')) {
+      handleWatchedIconClick(event.target);
     }
     // MORE DETAILS
     else if (event.target.classList.contains('details-summary')) {

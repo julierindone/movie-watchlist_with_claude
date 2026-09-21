@@ -87,6 +87,7 @@ export function generateWatchlistHtml() {
 						<div class="title-watchlist">
 							<h2>${movie.title}</h2>
 							<i class="fa-solid fa-circle-check" data-imdb-id="${movie.imdbID}"></i>
+							<i class="fa-${movie.watched ? 'solid' : 'regular'} fa-eye" data-imdb-id="${movie.imdbID}"></i>
 						</div>
 						<div class="runtime-year-genre-rating">
 							<div class="runtime-year-genre">

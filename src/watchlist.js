@@ -108,6 +108,22 @@ function addToWatchList(movie) {
 	watchlistArray.push(movie);
 }
 
+export function handleWatchedIconClick(eTarget) {
+	let movie = watchlistArray.find(movie => movie.imdbID === eTarget.dataset.imdbId);
+	if (movie == null) {
+		getSpaceSaver('error');
+		return null;
+	}
+
+	movie.watched = !movie.watched;
+
+	// set localStorage to match updated watchlist
+	setLocalStorageWatchlist();
+
+	// re-render to reflect updated icon
+	renderHtml();
+}
+
 function getClickedMovie(clickedImdbID) {
 	if (document.getElementById('watchlist-page')) {
 		return watchlistArray.find(movie => movie.imdbID === clickedImdbID);
