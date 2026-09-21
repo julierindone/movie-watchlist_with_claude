@@ -69,10 +69,10 @@ export function generateWatchlistHtml() {
 	if (watchlistArray.length > 0) {
 		let filteredMovies = getFilteredWatchlistArray();
 
-		// genre filter is active but matches nothing in the watchlist
+		// genre and/or watched filter is active but matches nothing in the watchlist
 		if (filteredMovies.length === 0) {
 			resetAll();
-			getSpaceSaver('no_genre_matches');
+			getSpaceSaver('no_filter_matches');
 			return;
 		}
 

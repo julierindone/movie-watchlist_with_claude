@@ -7,6 +7,8 @@ import {
   handleSortChange,
   getStoredSortPreference,
   handleFilterChange,
+  handleWatchedFilterChange,
+  getStoredWatchedFilter,
   populateGenreFilterOptions,
   watchlistArray
 } from './src/watchlist.js';
@@ -16,14 +18,16 @@ const searchForm = document.getElementById('search-form');
 const searchBar = document.getElementById('search-bar');
 const sortSelect = document.getElementById('sort-select');
 const genreFilterSelect = document.getElementById('genre-filter-select');
+const watchedFilterSelect = document.getElementById('watched-filter-select');
 
 // Check to see if watchlist exists in localStorage and create if it doesn't
 initLocalStorageWatchlist();
 
 if (document.getElementById('watchlist-page')) {
   if (watchlistArray.length > 0) {
-    // Rebuild genre options, then restore the saved sort choice.
+    // Rebuild genre options, then restore the saved sort and watched-filter choices.
     populateGenreFilterOptions();
+    watchedFilterSelect.value = getStoredWatchedFilter();
     sortSelect.value = getStoredSortPreference();
     handleSortChange(sortSelect.value);
   }
@@ -91,6 +95,12 @@ if (sortSelect) {
 if (genreFilterSelect) {
   genreFilterSelect.addEventListener('change', () => {
     handleFilterChange(genreFilterSelect.value);
+  });
+}
+
+if (watchedFilterSelect) {
+  watchedFilterSelect.addEventListener('change', () => {
+    handleWatchedFilterChange(watchedFilterSelect.value);
   });
 }
 

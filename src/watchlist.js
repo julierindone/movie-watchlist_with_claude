@@ -11,6 +11,9 @@ const SORT_STORAGE_KEY = 'watchlistSort';
 // Key used to persist the chosen watchlist genre filter.
 const FILTER_STORAGE_KEY = 'watchlistGenreFilter';
 
+// Key used to persist the chosen watchlist watched-status filter.
+const WATCHED_FILTER_STORAGE_KEY = 'watchlistWatchedFilter';
+
 // get list from localStorage
 function getLocalStorageWatchlist() {
 	return JSON.parse(localStorage.getItem("watchlist"));
@@ -205,12 +208,29 @@ export function handleFilterChange(genre) {
 	renderHtml();
 }
 
-// Returns the watchlist narrowed to the saved genre, or the full list.
+// Reads the saved watched-status filter, defaulting to "all" if unset.
+export function getStoredWatchedFilter() {
+	return getStoredPreference(WATCHED_FILTER_STORAGE_KEY, 'all');
+}
+
+// Persists the chosen watched-status filter, then re-renders the list.
+export function handleWatchedFilterChange(watchedStatus) {
+	setStoredPreference(WATCHED_FILTER_STORAGE_KEY, watchedStatus);
+	renderHtml();
+}
+
+// Returns the watchlist narrowed by the saved genre and watched-status filters.
 export function getFilteredWatchlistArray() {
 	let genre = getStoredGenreFilter();
-	return genre === 'all'
-		? watchlistArray
-		: watchlistArray.filter(movie => getGenreList(movie.genre).includes(genre));
+	let watchedFilter = getStoredWatchedFilter();
+
+	return watchlistArray
+		.filter(movie => genre === 'all' || getGenreList(movie.genre).includes(genre))
+		.filter(movie => {
+			if (watchedFilter === 'watched') return movie.watched === true;
+			if (watchedFilter === 'unwatched') return movie.watched !== true;
+			return true;
+		});
 }
 
 // Splits a comma-separated genre string into trimmed genre names.
