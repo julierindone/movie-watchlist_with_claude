@@ -31,3 +31,5 @@
 2. On the search page, submitting the search form calls `search.js`, which uses `fetch.js` to query OMDb, `normalize.js` to shape the data, and `render.js` to display cards.
 3. Clicking a card's watchlist icon calls into `watchlist.js`, which persists the change to `localStorage`.
 4. The watchlist page (`watchlist.html`) reads `watchlistArray` and renders it via `render.js`, or shows an empty-state message via `helpers.js` if nothing is saved.
+5. On the watchlist page, `watchlist.js` also supports sorting (title A-Z, year newest-first, rating highest-first) and filtering by genre; the chosen sort/filter is persisted to `localStorage` and re-applied via `renderHtml()` in `render.js`.
+6. Each watchlist item has a `watched` flag, shown as an eye icon (`render.js`: solid when watched, regular outline when not) that toggles on click via `handleWatchedIconClick` in `watchlist.js`. The watchlist can also be filtered to watched/unwatched/all via a dropdown (`handleWatchedFilterChange`/`getStoredWatchedFilter`), combined with the genre filter in `getFilteredWatchlistArray()`; both choices persist to `localStorage`.
