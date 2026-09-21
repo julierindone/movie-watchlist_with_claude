@@ -120,3 +120,71 @@ describe('toggleMainSection', () => {
 		expect(() => toggleMainSection('space-saver')).toThrow();
 	});
 });
+
+import { getStoredPreference, setStoredPreference } from './helpers.js';
+
+describe('getStoredPreference', () => {
+	beforeEach(() => {
+		global.localStorage = {
+			store: {},
+			getItem: vi.fn(key => global.localStorage.store[key] ?? null),
+			setItem: vi.fn((key, value) => { global.localStorage.store[key] = value; }),
+		};
+	});
+
+	it('returns the stored value for a normal, previously-saved key', () => {
+		global.localStorage.store.watchlistSort = 'rating';
+
+		expect(getStoredPreference('watchlistSort', 'title')).toBe('rating');
+		expect(global.localStorage.getItem).toHaveBeenCalledWith('watchlistSort');
+	});
+
+	it('falls back to the given default when nothing is stored for that key (empty/no-match result)', () => {
+		expect(getStoredPreference('neverSetKey', 'title')).toBe('title');
+	});
+
+	it('propagates the error instead of silently falling back when localStorage.getItem throws (e.g. storage disabled/unavailable)', () => {
+		global.localStorage.getItem = vi.fn(() => { throw new Error('SecurityError: storage disabled'); });
+
+		expect(() => getStoredPreference('watchlistSort', 'title')).toThrow();
+	});
+
+	it('treats a null key the same as a missing one instead of crashing (invalid input)', () => {
+		expect(getStoredPreference(null, 'title')).toBe('title');
+	});
+});
+
+describe('setStoredPreference', () => {
+	beforeEach(() => {
+		global.localStorage = {
+			store: {},
+			getItem: vi.fn(key => global.localStorage.store[key] ?? null),
+			setItem: vi.fn((key, value) => { global.localStorage.store[key] = value; }),
+		};
+	});
+
+	it('writes the given value under the given key for a normal call', () => {
+		setStoredPreference('watchlistSort', 'rating');
+
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlistSort', 'rating');
+		expect(global.localStorage.store.watchlistSort).toBe('rating');
+	});
+
+	it('stores an empty string without error for an empty/no-selection value', () => {
+		setStoredPreference('watchlistGenreFilter', '');
+
+		expect(global.localStorage.store.watchlistGenreFilter).toBe('');
+	});
+
+	it('propagates the error when localStorage.setItem fails (e.g. storage quota exceeded/disabled)', () => {
+		global.localStorage.setItem = vi.fn(() => { throw new Error('QuotaExceededError'); });
+
+		expect(() => setStoredPreference('watchlistSort', 'rating')).toThrow();
+	});
+
+	it('forwards an invalid (undefined) value through to localStorage without validating it', () => {
+		setStoredPreference('watchlistSort', undefined);
+
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlistSort', undefined);
+	});
+});

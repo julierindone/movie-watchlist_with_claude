@@ -10,9 +10,16 @@ vi.mock('./helpers.js', () => ({
 	resetAll: vi.fn(),
 }));
 
-vi.mock('./watchlist.js', () => ({
-	watchlistArray: [],
-}));
+vi.mock('./watchlist.js', () => {
+	const watchlistArray = [];
+	return {
+		watchlistArray,
+		// Mirrors the real function's pass-through behavior when no genre/watched
+		// filter is active (the default in these tests): returns whatever is
+		// currently in watchlistArray, read dynamically so pushes in tests apply.
+		getFilteredWatchlistArray: vi.fn(() => watchlistArray),
+	};
+});
 
 vi.mock('./search.js', () => ({
 	resultsArray: [],
