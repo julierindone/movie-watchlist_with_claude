@@ -19,7 +19,8 @@ duplicates.
 
 - .memory/knowledge/ — Read-only. Consult before making any decision
   that touches coding standards or architectural constraints. Never
-  attempt to write to this directory.
+  attempt to write to this directory. Never modify file permissions 
+  in .memory/knowledge/ without explicit human instruction.
 
 - .memory/reference/ — Read-only. Query by keyword for relevant
   excerpts when you need background context. Do not read the entire
