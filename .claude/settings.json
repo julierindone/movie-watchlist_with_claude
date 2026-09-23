@@ -3,6 +3,12 @@
     "allow": [
       "Bash(npx vitest run:*)",
       "Write"
+    ],
+    "deny": [
+      "Edit(/.memory/knowledge/**)",
+      "Edit(/.memory/reference/**)",
+      "Edit(.memory/knowledge/**)",
+      "Edit(.memory/reference/**)"
     ]
   }
 }
