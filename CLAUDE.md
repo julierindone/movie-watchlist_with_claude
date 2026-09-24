@@ -22,16 +22,19 @@ duplicates.
   attempt to write to this directory. Never modify file permissions 
   in .memory/knowledge/ without explicit human instruction.
 
-- .memory/reference/ — Read-only. Query by keyword for relevant
-  excerpts when you need background context. Do not read the entire
-  directory.
+- .memory/reference/ — Read-only. Check `.memory/reference/REFERENCE_INDEX.md`
+  first; open only the document(s) whose index entry matches the current
+  task. Do not read the directory itself.
 
 ### Write policy
 
 Before writing a new memory entry, check MEMORY_INDEX.md for an
 existing entry on the same topic. Update existing entries rather
-than creating new ones. Never write anything classified as
-Confidential or Secret to any memory layer.
+than creating new ones. Never write credentials, API keys, .env
+values, or personal data beyond what's already public in this
+repo's git history, to any memory layer — see
+docs/memory-architecture.md, "What must never be stored," for
+the full list.
 
 ### Stale memory policy
 
@@ -44,7 +47,3 @@ Read SCOPE.md at the root of .memory/ on startup. If it does not
 match this project, halt and report the mismatch before doing
 anything else. NOTE: Scope is verified against the git remote, not the directory name.
 
-
-<!-- 2 notes on this doc from Claude:
-- "Query by keyword for relevant excerpts" for .memory/reference/ — there's no index there yet, so in practice that's a grep over the directory. Fine, just means the "don't read the whole directory" rule depends on the agent's restraint rather than any mechanism.
-- "Never write anything classified as Confidential or Secret" assumes a classification scheme that isn't defined anywhere in the repo. Harmless as a general instruction, but it won't be checkable. -->

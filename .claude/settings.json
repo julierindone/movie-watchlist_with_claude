@@ -10,5 +10,6 @@
       "Edit(.memory/knowledge/**)",
       "Edit(.memory/reference/**)"
     ]
-  }
+  },
+  "model": "sonnet"
 }

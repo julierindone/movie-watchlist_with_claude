@@ -13,11 +13,7 @@ top-level `/tests` directory.
 **Alternatives rejected:** A separate top-level `/tests` directory mirroring the
 `src/` layout.
 
-**Current state as of 2026-09-23:** This is the layout the project already uses.
-Six colocated test files in `src/`: `fetch.test.js`, `helpers.test.js`,
-`normalize.test.js`, `render.test.js`, `search.test.js`, `watchlist.test.js`.
-
-**Implementation notes:** `package.json` runs `vitest run` with no vitest or vite
-config file present, so vitest's default `**/*.test.js` discovery already finds
-these. The `find-untested-functions` skill pairs `fileName.js` with a sibling
-`fileName.test.js`, which this layout satisfies.
+**Depends on:** `package.json` runs `vitest run` with no vitest/vite config
+file present, so this layout relies on vitest's default `**/*.test.js`
+discovery. If a config file is ever added, check it doesn't narrow that
+pattern. The `find-untested-functions` skill also assumes this pairing.
