@@ -10,6 +10,7 @@ import {
   handleWatchedFilterChange,
   getStoredWatchedFilter,
   populateGenreFilterOptions,
+  handleNoteChange,
   watchlistArray
 } from './src/watchlist.js';
 
@@ -110,3 +111,12 @@ document.getElementById('main-wrapper').addEventListener('error', (event) => {
     handleImageError(brokenImage);
   }
 }, true);
+
+// SAVE NOTE ON BLUR (watchlist page only; focusout bubbles, blur doesn't)
+if (document.getElementById('watchlist-page')) {
+  document.addEventListener('focusout', (event) => {
+    if (event.target.classList.contains('note-input')) {
+      handleNoteChange(event.target.dataset.imdbId, event.target.value);
+    }
+  });
+}

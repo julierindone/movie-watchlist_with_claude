@@ -127,6 +127,27 @@ export function handleWatchedIconClick(eTarget) {
 	renderHtml();
 }
 
+// Saves a trimmed note onto the matching watchlist movie and persists it.
+export function handleNoteChange(movieImdbID, noteText) {
+	let movie = watchlistArray.find(movie => movie.imdbID === movieImdbID);
+	if (movie == null) {
+		getSpaceSaver('error');
+		console.error(`handleNoteChange failed: no watchlist item found for imdbID "${movieImdbID}".`);
+		return null;
+	}
+
+	let trimmedNote = noteText.trim();
+
+	// Skip the write when the note is unchanged, so the log stays meaningful.
+	if ((movie.notes ?? '') === trimmedNote) {
+		return null;
+	}
+
+	movie.notes = trimmedNote;
+	setLocalStorageWatchlist();
+	console.log(`Note updated for imdbID "${movieImdbID}" at ${new Date().toISOString()}.`);
+}
+
 function getClickedMovie(clickedImdbID) {
 	if (document.getElementById('watchlist-page')) {
 		return watchlistArray.find(movie => movie.imdbID === clickedImdbID);

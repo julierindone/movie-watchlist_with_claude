@@ -34,6 +34,15 @@ export function getSpaceSaver(status) {
 		</div>`;
 }
 
+// Escapes characters that would break markup when inserted via innerHTML.
+export function escapeHtml(text) {
+	return text
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
+}
+
 // Reads a stored preference by key, falling back when absent.
 export function getStoredPreference(key, fallback) {
 	return localStorage.getItem(key) ?? fallback;

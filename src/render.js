@@ -1,4 +1,4 @@
-import { getSpaceSaver, toggleMainSection, resetAll } from './helpers.js';
+import { getSpaceSaver, toggleMainSection, resetAll, escapeHtml } from './helpers.js';
 import { watchlistArray, getFilteredWatchlistArray } from './watchlist.js';
 import { resultsArray, searchType } from './search.js';
 import VanillaTilt from 'vanilla-tilt';
@@ -80,6 +80,7 @@ export function generateWatchlistHtml() {
 
 		filteredMovies.forEach(movie => {
 			let rating = generateRatingHtml(movie.rating);
+			let note = generateNoteHtml(movie);
 			html +=
 				`<article class="movie-card">
 					<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
@@ -97,6 +98,7 @@ export function generateWatchlistHtml() {
 							${rating}
 						</div>
 						<p class="plot">${movie.plot}</p>
+						${note}
 					</div>
 				</article>
 				<hr class="card-divider">`;
@@ -124,6 +126,16 @@ function generateRatingHtml(rating) {
 	else {
 		return '';
 	}
+}
+
+// Builds the note textarea markup, escaped to allow safe innerHTML use.
+function generateNoteHtml(movie) {
+	let noteText = escapeHtml(movie.notes ?? '');
+	return `
+		<div class="movie-note">
+			<label class="note-label" for="note-${movie.imdbID}">Notes</label>
+			<textarea class="note-input" id="note-${movie.imdbID}" data-imdb-id="${movie.imdbID}">${noteText}</textarea>
+		</div>`;
 }
 
 // render content based on type of list

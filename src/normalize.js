@@ -10,7 +10,8 @@ export function createMovieObject(movie, watchlistStatus) {
 		thumbnail: getThumbnail(movie.Poster) ?? null,
 		alt: `poster for ${movie.Title}`,
 		watchlist: watchlistStatus,
-		watched: false
+		watched: false,
+		notes: ''
 	};
 }
 
