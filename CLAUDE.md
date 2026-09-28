@@ -37,9 +37,21 @@ docs/memory-architecture.md, "What must never be stored," for
 the full list.
 
 ### Stale memory policy
-
-If a memory entry's review date has passed, flag it in your session
-output and ask for human confirmation before acting on it.
+Before acting on any memory entry, check its review date.
+If the review date has passed:
+1. Do not act on that entry until a human confirms it
+   is still accurate
+2. State clearly in your response: "Memory entry
+   [filename] has a review date of [date], which has
+   passed. Please confirm this is still current before
+   I proceed."
+3. Wait for confirmation before using the entry
+ 
+This applies to all entries in .memory/project/.
+Knowledge files do not have review dates and are
+maintained by humans directly.
+ 
+Show me the updated CLAUDE.md section to confirm.
 
 ### Scope verification
 
