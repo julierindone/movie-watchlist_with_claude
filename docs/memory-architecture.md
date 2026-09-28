@@ -3,7 +3,7 @@
 - **Purpose:** plan of record for the persistent memory system in `movie-watchlist_with_claude`.
 - **Covers:** the system actually being submitted, not the draft built during the lesson's Try It activities.
 - **Headings:** follow the lesson's prescribed scaffold (3.1.4.1, Step 2).
-- **Last revised:** 2026-09-24
+- **Last revised:** 2026-09-28
 
 ---
 
@@ -234,20 +234,21 @@ Two candidates weighed and rejected:
 
 ## Allocation decision table
 
+Each item maps to one of the four memory-system layers: the **context window** (this session only), **knowledge files** (stable, read-only reference), **project memory** (cross-session state that changes slowly), or **skills** (reusable procedure, versioned, no storage). Items that belong to the repository, `docs/`, or the environment instead of any memory layer are covered separately, in "What does not belong in persistent memory" above.
+
 | Item | Layer | Why there | Review trigger |
 |---|---|---|---|
-| Watched status as a field, not a parallel array — and the rejected alternative | 1 — project | Rationale absent from code; dated; could be superseded | 90 days (2026-12-21) |
-| Tests colocated with source | 1 — project | A structural choice with a rationale the layout alone doesn't give | 90 days (2026-12-22) |
-| Current feature state: filter shipped; eye icon deliberately absent from search results | 1 — project | Changes as work ships; a fresh session mis-reads absence as a bug | Rewritten whenever a feature ships |
-| Open question: can a movie be watched without being on the watchlist? | 1 — project | Unresolved; answering it reopens decision-001 | Closed when answered, then folded into a decision entry |
-| "New per-item state is a boolean on the item object" | 2 — knowledge | Binds *any* future toggle feature, not just watched-status; must not be agent-rewritable | Human, on convention change |
-| Coding standards | 2 — knowledge | Stable, human-owned, consulted before writing code | Human, no schedule |
-| Vanilla JS only; no CSS edits without consent | 2 — knowledge | Standing constraints on how work is done at all | Human, on convention change |
-| chmod findings, long form | Neither — `docs/` | A human-facing write-up; its operative rule lives in Layer 2 | When the environment changes |
-| Add-a-toggle-feature procedure | Neither — skill | Repeatable steps, not knowledge | When the procedure changes |
-| The `watched` field, its UI, its tests | Neither — the code | Already the documentation of itself | n/a |
-| Test data, transient console errors | Neither — context window | Expires with the task | n/a |
-| OMDb API key | Neither — `.env` | Never in memory, never in git | n/a |
+| Watched status as a field, not a parallel array — and the rejected alternative | Project memory (Layer 1) | Rationale absent from code; dated; could be superseded | 90 days (2026-12-21) |
+| Tests colocated with source | Project memory | A structural choice with a rationale the layout alone doesn't give | 90 days (2026-12-22) |
+| Current feature state: filter shipped; eye icon deliberately absent from search results | Project memory | Changes as work ships; a fresh session mis-reads absence as a bug | Rewritten whenever a feature ships |
+| Open question: can a movie be watched without being on the watchlist? | Project memory | Unresolved; answering it reopens decision-001 | Closed when answered, then folded into a decision entry |
+| Memory scope declaration (`SCOPE.md`) | Project memory (read-only to agent) | Identifies which project owns the mounted memory directory; checked before any other memory file is read | Human, when the project's identity changes (e.g. the repo migrates) |
+| Credential location (e.g. "the OMDb key lives in `OMDB_API_KEY`") | Project memory | Records how the credential is accessed without storing its value | Human, if the variable name changes |
+| "New per-item state is a boolean on the item object" | Knowledge files (Layer 2) | Binds *any* future toggle feature, not just watched-status; must not be agent-rewritable | Human, on convention change |
+| Coding standards | Knowledge files | Stable, human-owned, consulted before writing code | Human, no schedule |
+| Vanilla JS only; no CSS edits without consent | Knowledge files | Standing constraints on how work is done at all | Human, on convention change |
+| Add-a-toggle-feature procedure | Skills | Repeatable steps, versioned, holds no project state | When the procedure changes |
+| Test data, transient console errors | Context window | Expires with the task; never worth a cross-session write | n/a |
 
 ---
 
@@ -274,6 +275,27 @@ Two candidates weighed and rejected:
 
 ---
 
+## Stale Memory
+
+Every entry in `.memory/project/` that carries a `Review by` date is subject to this policy. Before acting on such an entry, the agent checks whether that date has passed.
+
+- If the review date has passed, the agent does not act on the entry until a human confirms it is still accurate.
+- It states clearly, in its response, which entry and which date have passed, and asks for confirmation before proceeding.
+- It waits for that confirmation before using the entry.
+
+This applies to `.memory/project/` only. Knowledge files (`.memory/knowledge/`) carry no review date and are maintained by humans directly, on their own schedule.
+
+---
+
+## Scope Verification
+
+`SCOPE.md`, at the root of `.memory/`, declares which project this memory directory belongs to. On startup, before reading any other memory file, the agent reads `SCOPE.md` and compares the project it names against the current repository.
+
+- The comparison is against the **git remote** (`git remote -v`), not the directory name or folder path — a clone renamed locally still matches; the wrong repo checked out under a right-looking folder name does not.
+- If they do not match, the agent halts immediately and reports the mismatch, before doing anything else — including before reading `MEMORY_INDEX.md`.
+
+---
+
 ## Data Classification
 
 Before writing anything to a memory file, classify it:
@@ -283,6 +305,12 @@ Before writing anything to a memory file, classify it:
 - **Confidential** — Sensitive business data. Do not store in agent memory. Retrieve from secure systems on demand.
 - **Secret** — Credentials, tokens, API keys, PII. Must never appear in any memory file. If the agent encounters a secret during a run, use it for the immediate task only and explicitly do not write it to any memory layer. Reference the environment variable name instead.
 
+### Credential Handling
+
+Credential *values* must never be stored in memory, in any layer. The system may record the *name* of an environment variable that holds a credential — e.g. `OMDB_API_KEY` — but never the value inside it. If a secret value is ever found already written in a memory file, flag it immediately and do not proceed until a human removes it.
+
 ### Guardrails
 
 A pre-commit hook at `.git/hooks/pre-commit` scans `.memory/` for common credential patterns before each commit. If a pattern is found, the commit is blocked.
+
+**Not versioned:** `.git/hooks/` is not tracked by git. The hook is local to this clone and does not travel with the repo — a fresh clone, or a teammate's checkout, has no pre-commit protection until the hook is installed there again.
