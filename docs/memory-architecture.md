@@ -274,10 +274,15 @@ Two candidates weighed and rejected:
 
 ---
 
-## A note on verifying this system
+## Data Classification
 
-- Claude Code has its own built-in auto-memory at `~/.claude/projects/.../memory/MEMORY.md`.
-- It loads regardless of `--continue` or `--resume`.
-- So a "fresh session" can recall prior-session content this system had nothing to do with — which quietly invalidates the fresh-session test.
-- Any verification run has to account for it before its result means anything.
-- Filed as errata in `docs/course-text-errata.md`.
+Before writing anything to a memory file, classify it:
+
+- **Public** — Safe to commit to the repo and share broadly. Most project decisions and coding standards fall here.
+- **Internal** — Safe within the team but not for public repos. Store in a non-committed volume or `.gitignore` the containing folder.
+- **Confidential** — Sensitive business data. Do not store in agent memory. Retrieve from secure systems on demand.
+- **Secret** — Credentials, tokens, API keys, PII. Must never appear in any memory file. If the agent encounters a secret during a run, use it for the immediate task only and explicitly do not write it to any memory layer. Reference the environment variable name instead.
+
+### Guardrails
+
+A pre-commit hook at `.git/hooks/pre-commit` scans `.memory/` for common credential patterns before each commit. If a pattern is found, the commit is blocked.
