@@ -11,5 +11,5 @@
       "Edit(.memory/reference/**)"
     ]
   },
-  "model": "sonnet"
+  "model": "claude-sonnet-5"
 }

@@ -6,6 +6,7 @@ node_modules/
 coverage/
 
 docs/output
+course-text-errata.md
 
 # Settings
 .claude/settings.local.json
