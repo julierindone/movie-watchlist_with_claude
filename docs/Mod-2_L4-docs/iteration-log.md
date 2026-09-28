@@ -18,4 +18,5 @@ Nothing - worked as expected
 none
 
 #### Changes made:
-none
+Update 1(stale memory policy not detailed enough): 46e82b0 - `CLAUDE.md`
+(I updated CLAUDE.md's stale memory policy even though my agent had caught it, because I'm thinking the more detailed policy may be helpful in the future.)
