@@ -1,5 +1,7 @@
 # Iteration Log - test-repair agent
 
+**NOTE: the cost for the entire session (all 3 runs) was $8.29 (16.07M in / 109.9k)**
+
 ## Run 001 | 9/29/26
 - **Agent/Tool used:** test-repair agent v0.1.0
 - **Task:** Run vitest to find currently failing tests, analyze why each broke, and repair mechanical failures.
@@ -105,7 +107,7 @@ Reconstructed `src/watchlist.test.js` byte-for-byte from this session's own suba
 
 ### Measurements:
 - Cycle time: 1 min 55 sec
-- Review latency: (fill in once reviewed)
+- Review latency: 14min
 - Cost per run: $0.09 (178,960 in / 53 out)
 
 ### Pass/Fail: **Pass** (first clean pass this iteration)
