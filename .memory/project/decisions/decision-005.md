@@ -28,6 +28,8 @@ element content and double-quoted attributes, but **not** for an unquoted
 attribute value, which would also need `'`. Check this before putting user
 text anywhere but a textarea body. Separately: `src/render.test.js` mocks
 `./helpers.js` with an explicit factory listing each export by name, so adding
-any export to `helpers.js` breaks that mock until it's added there too. Two
-`generateWatchlistHtml` tests are failing for exactly this reason as of
-2026-09-25 and were left unfixed on purpose.
+any export to `helpers.js` breaks that mock until it's added there too. The
+`./helpers.js` mock factory in `src/render.test.js` now includes
+`escapeHtml: vi.fn((text) => text)` (added 2026-09-29 by the test-repair
+agent) so the two `generateWatchlistHtml` tests that were failing for this
+reason as of 2026-09-25 now pass again.

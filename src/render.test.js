@@ -8,6 +8,7 @@ vi.mock('./helpers.js', () => ({
 	getSpaceSaver: vi.fn(),
 	toggleMainSection: vi.fn(),
 	resetAll: vi.fn(),
+	escapeHtml: vi.fn((text) => text),
 }));
 
 vi.mock('./watchlist.js', () => {
