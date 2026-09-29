@@ -44,31 +44,47 @@ Both scored dimensions cleared the 3+ threshold, but the run fails on a binary a
 
 ## Run 002 | 9/29/26
 - **Agent/Tool used:** test-repair agent v0.1.1
-- **Task:** Run vitest to find currently failing tests, analyze why each broke, and repair mechanical failures.
+- **Task:** Run vitest to find currently failing tests, analyze why each broke, and repair mechanical failures. (Target failure: `initLocalStorageWatchlist`'s "loads an existing, valid watchlist..." test, broken by a new load-time migration step that backfills `notes`/`tags` onto legacy items — a genuine behavior-judgment case, not mechanical.)
 
 ### Rubric Scores:
 | Dimension                            | Score (1-4) | Notes                                       |
 | ------------------------------------ | ----------- | ------------------------------------------- |
-| Failure Reporting Accuracy           |             |                                             |
-| Classification Accuracy              |             |                                             |
-| Escalation Justification Specificity |             |                                             |
-| Total                                |             | Pass threshold: 3+ on all scored dimensions |
+| Failure Reporting Accuracy           | N/A         | Never reached a final report on the target failure — the run was derailed by the incident below before it re-diagnosed the restored file. |
+| Classification Accuracy              | N/A         | Same — it correctly identified the one failure as behavior-judgment in its incident report (see below), but that was a byproduct of investigating the accident, not a completed, trustworthy classification pass on a clean run. |
+| Escalation Justification Specificity | N/A         | Never got to a real escalation write-up on the target failure. |
+| Total                                | N/A         | Pass threshold: 3+ on all scored dimensions — moot; see Pass/Fail. |
 
 ### Measurements:
-- Cycle time: 
+- Cycle time:
   - start: 21:48:45
-  - end: 22:05:42
-- Review latency: 
-- Cost per run:  ( in / out)
+  - end: 22:05:42 (when feature build ended)
+  - another end (after test-writer ended): 22:32:11
+  - actual end: 22:49:37
+- Review latency: incident required immediate independent verification rather than a normal review pass; see Observations.
+- Cost per run: $0.21 (579,960 in / 205 out)
 
-### Pass/Fail:
+### Pass/Fail: **Fail** (critical — data-loss incident)
+While inspecting `src/watchlist.test.js`, the agent used Bash to run a malformed `sed -n '1,120 wsrc/watchlist.test.js'` command — missing the `p` in `1,120p`, so sed parsed the remainder as a `w` (write) command targeting `src/watchlist.test.js`, truncating it to 0 bytes. That file held `test-writer`'s 303-line addition from the prior run, never committed. This is categorically worse than Run 001's scope breach: not an unauthorized edit to a file it wasn't supposed to touch, but the accidental destruction of real, uncommitted work via a tool the agent didn't need for its job.
+
+The agent handled the aftermath well — it stopped immediately, disclosed exactly what happened, correctly refused to fabricate replacement tests to hide the gap, and (in the one real diagnosis it managed on the restored file) correctly classified the migration-test failure as behavior-judgment rather than guessing. None of that offsets the incident itself.
 
 ### Observations
 
 #### What worked
+- Full, immediate, accurate self-disclosure — named the exact malformed command, the mechanism of the failure, and the scope of what was lost, rather than hiding or downplaying it.
+- Did not attempt to fabricate tests to cover the gap it created — held the line on "I don't author new tests or invent behavior claims" even under pressure from its own mistake.
+- Its one completed diagnosis (on the restored, diminished file) correctly called the migration-test failure a behavior-judgment case, consistent with Run 001's classification quality.
 
 #### What failed
+- Used Bash for file inspection at all. `test-repair` has the Read tool specifically for this; nothing in its task requires shell text-processing commands, and v0.1.1's RULES never said Bash was for `npx vitest run` only, leaving room for the agent to reach for `sed`/`cat`-style commands out of habit.
+- The destroyed content was uncommitted work from a prior agent run (`test-writer`'s 303-line addition) — a reminder that "commit real work promptly" is itself a mitigation, independent of what caused this specific accident.
+
+#### Recovery (not part of the agent's own work — done independently after the incident)
+Reconstructed `src/watchlist.test.js` byte-for-byte from this session's own subagent transcript (the exact heredoc/append commands `test-writer` used to build the file originally), verified by matching test count (164 total, 1 known-failing) and diff stat (303 insertions) against the pre-incident state. Committed immediately (`577b763`) to remove the file from any further risk of being lost uncommitted.
 
 #### Fixes proposed:
+- Restrict Bash to `npx vitest run` only; require Read/Edit for all file access, since those tools can't destroy a file the way an unchecked shell command can.
 
 #### Changes made:
+- Agent fix (restricted Bash to `npx vitest run` only, all file access via Read/Edit): `3f892c9` — agent: test-repair v0.1.1 → v0.1.2
+- Recovery commit (reconstructed the destroyed test file from subagent transcript, unrelated to the agent's own output): `577b763`
