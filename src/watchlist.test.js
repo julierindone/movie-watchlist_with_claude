@@ -494,6 +494,27 @@ describe('getFilteredWatchlistArray', () => {
 
 		expect(filtered).toEqual([]);
 	});
+
+	it('returns only movies matching the saved tag filter for a normal call', () => {
+		watchlistArray.push(
+			{ ...fakeMovie('tt1', 'Comedy', true), tags: ['classic'] },
+			{ ...fakeMovie('tt2', 'Drama', true), tags: ['weekend'] }
+		);
+		global.localStorage.store.watchlistTagFilter = 'classic';
+
+		const filtered = getFilteredWatchlistArray();
+
+		expect(filtered.map(m => m.imdbID)).toEqual(['tt1']);
+	});
+
+	it('excludes a watchlist entry with no tags array at all when a specific tag filter is active (invalid/missing input)', () => {
+		watchlistArray.push(fakeMovie('tt1', 'Comedy', true));
+		global.localStorage.store.watchlistTagFilter = 'classic';
+
+		const filtered = getFilteredWatchlistArray();
+
+		expect(filtered).toEqual([]);
+	});
 });
 
 describe('populateGenreFilterOptions', () => {
@@ -540,5 +561,287 @@ describe('populateGenreFilterOptions', () => {
 
 		expect(filterSelect.value).toBe('all');
 		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlistGenreFilter', 'all');
+	});
+});
+
+import {
+	handleNoteChange,
+	handleAddTag,
+	handleRemoveTag,
+	getStoredTagFilter,
+	handleTagFilterChange,
+	populateTagFilterOptions,
+} from './watchlist.js';
+
+describe('getStoredTagFilter', () => {
+	it('returns the previously saved tag for a normal call', () => {
+		global.localStorage.store.watchlistTagFilter = 'classic';
+
+		expect(getStoredTagFilter()).toBe('classic');
+	});
+
+	it('defaults to "all" when no tag filter has been saved yet (empty/no-match result)', () => {
+		expect(getStoredTagFilter()).toBe('all');
+	});
+
+	it('propagates the error when localStorage throws on read', () => {
+		global.localStorage.getItem = vi.fn(() => { throw new Error('storage disabled'); });
+
+		expect(() => getStoredTagFilter()).toThrow();
+	});
+
+	it('returns an invalid/no-longer-existing tag string as-is without validating it against the watchlist', () => {
+		global.localStorage.store.watchlistTagFilter = 'NotARealTag';
+
+		expect(getStoredTagFilter()).toBe('NotARealTag');
+	});
+});
+
+describe('handleTagFilterChange', () => {
+	it('persists the chosen tag filter and re-renders for a normal call', () => {
+		handleTagFilterChange('classic');
+
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlistTagFilter', 'classic');
+		expect(renderHtml).toHaveBeenCalled();
+		expect(getStoredTagFilter()).toBe('classic');
+	});
+
+	it('persists "all" the same way when the reset/"All Tags" option is chosen', () => {
+		handleTagFilterChange('all');
+
+		expect(getStoredTagFilter()).toBe('all');
+	});
+
+	it('propagates the error when persisting the tag filter to localStorage fails', () => {
+		global.localStorage.setItem = vi.fn(() => { throw new Error('storage disabled'); });
+
+		expect(() => handleTagFilterChange('classic')).toThrow();
+	});
+
+	it('stores and returns an invalid tag value without validating it against real tags', () => {
+		handleTagFilterChange(12345);
+
+		expect(getStoredTagFilter()).toBe(12345);
+	});
+});
+
+describe('populateTagFilterOptions', () => {
+	function createFakeSelect() {
+		return { innerHTML: '', value: '' };
+	}
+
+	it('builds the tag dropdown from tags present in the watchlist and restores a still-valid saved tag for a normal call', () => {
+		watchlistArray.push({ ...createFullMovie('tt1'), tags: ['classic', 'weekend'] }, { imdbID: 'tt2', tags: ['weekend'] });
+		const filterSelect = createFakeSelect();
+		global.localStorage.store.watchlistTagFilter = 'classic';
+		global.document.getElementById = vi.fn(id => (id === 'tag-filter-select' ? filterSelect : null));
+
+		populateTagFilterOptions();
+
+		expect(filterSelect.innerHTML).toContain('All Tags');
+		expect(filterSelect.innerHTML).toContain('classic');
+		expect(filterSelect.innerHTML).toContain('weekend');
+		expect(filterSelect.value).toBe('classic');
+	});
+
+	it('does nothing and does not throw when the tag filter dropdown is not present on the page (e.g. search page, not watchlist page)', () => {
+		global.document.getElementById = vi.fn(() => null);
+
+		expect(() => populateTagFilterOptions()).not.toThrow();
+	});
+
+	it('propagates the error when reading the saved tag filter from localStorage fails', () => {
+		watchlistArray.push({ ...createFullMovie('tt1'), tags: ['classic'] });
+		const filterSelect = createFakeSelect();
+		global.document.getElementById = vi.fn(id => (id === 'tag-filter-select' ? filterSelect : null));
+		global.localStorage.getItem = vi.fn(() => { throw new Error('storage disabled'); });
+
+		expect(() => populateTagFilterOptions()).toThrow();
+	});
+
+	it('falls back to "all" and persists that fallback when the previously saved tag no longer exists in the watchlist (invalid/stale input)', () => {
+		watchlistArray.push({ ...createFullMovie('tt1'), tags: ['classic'] });
+		const filterSelect = createFakeSelect();
+		global.localStorage.store.watchlistTagFilter = 'not-a-real-tag';
+		global.document.getElementById = vi.fn(id => (id === 'tag-filter-select' ? filterSelect : null));
+
+		populateTagFilterOptions();
+
+		expect(filterSelect.value).toBe('all');
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlistTagFilter', 'all');
+	});
+
+	it('returns an empty tag list (only the "All Tags" option) when no watchlist item has any tags (empty/no-match result)', () => {
+		watchlistArray.push(createFullMovie('tt1'));
+		const filterSelect = createFakeSelect();
+		global.document.getElementById = vi.fn(id => (id === 'tag-filter-select' ? filterSelect : null));
+
+		populateTagFilterOptions();
+
+		expect(filterSelect.innerHTML).toBe('<option value="all">All Tags</option>');
+		expect(filterSelect.value).toBe('all');
+	});
+});
+
+describe('handleNoteChange', () => {
+	it('trims and saves a new note onto the matching movie, then persists it for a normal call', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+		const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+		handleNoteChange('tt0098258', '  A cozy rewatch.  ');
+
+		expect(watchlistArray[0].notes).toBe('A cozy rewatch.');
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify(watchlistArray));
+		expect(consoleSpy).toHaveBeenCalled();
+		consoleSpy.mockRestore();
+	});
+
+	it('shows the space-saver error state and does not persist when no watchlist item matches the imdbID (empty/no-match result)', () => {
+		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		const result = handleNoteChange('tt9999999', 'Some note');
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(consoleErrorSpy).toHaveBeenCalled();
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+		consoleErrorSpy.mockRestore();
+	});
+
+	it('propagates the error instead of finishing the update when persisting the note to localStorage fails', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+		global.localStorage.setItem = vi.fn(() => { throw new Error('QuotaExceededError'); });
+
+		expect(() => handleNoteChange('tt0098258', 'Some note')).toThrow();
+	});
+
+	it('throws for invalid input when called without note text at all', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+
+		expect(() => handleNoteChange('tt0098258', undefined)).toThrow();
+	});
+
+	it('skips the write silently when the trimmed note is unchanged from the stored note', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.notes = 'Already saved.';
+		watchlistArray.push(movie);
+
+		const result = handleNoteChange('tt0098258', 'Already saved.');
+
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+	});
+});
+
+describe('handleAddTag', () => {
+	it('appends a new trimmed tag to the matching movie, persists, and re-renders for a normal call', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+
+		handleAddTag('tt0098258', '  classic  ');
+
+		expect(watchlistArray[0].tags).toEqual(['classic']);
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify(watchlistArray));
+		expect(renderHtml).toHaveBeenCalled();
+	});
+
+	it('does not add a duplicate tag and does not persist when the tag already exists (empty/no-match result)', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.tags = ['classic'];
+		watchlistArray.push(movie);
+
+		const result = handleAddTag('tt0098258', 'classic');
+
+		expect(watchlistArray[0].tags).toEqual(['classic']);
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+	});
+
+	it('shows the space-saver error state and does not persist when no watchlist item matches the imdbID', () => {
+		const result = handleAddTag('tt9999999', 'classic');
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+	});
+
+	it('propagates the error instead of finishing the update when persisting the new tag to localStorage fails', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+		global.localStorage.setItem = vi.fn(() => { throw new Error('QuotaExceededError'); });
+
+		expect(() => handleAddTag('tt0098258', 'classic')).toThrow();
+	});
+
+	it('throws for invalid input when called without tag text at all', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+
+		expect(() => handleAddTag('tt0098258', undefined)).toThrow();
+	});
+
+	it('does not add a blank/whitespace-only tag (invalid input)', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+
+		const result = handleAddTag('tt0098258', '   ');
+
+		expect(watchlistArray[0].tags ?? []).toEqual([]);
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+	});
+});
+
+describe('handleRemoveTag', () => {
+	it('removes the matching tag from the movie, persists, and re-renders for a normal call', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.tags = ['classic', 'weekend'];
+		watchlistArray.push(movie);
+
+		handleRemoveTag('tt0098258', 'classic');
+
+		expect(watchlistArray[0].tags).toEqual(['weekend']);
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify(watchlistArray));
+		expect(renderHtml).toHaveBeenCalled();
+	});
+
+	it('leaves the tag list unchanged (but still persists) when the given tag is not present on the movie (empty/no-match result)', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.tags = ['classic'];
+		watchlistArray.push(movie);
+
+		handleRemoveTag('tt0098258', 'not-a-real-tag');
+
+		expect(watchlistArray[0].tags).toEqual(['classic']);
+		expect(global.localStorage.setItem).toHaveBeenCalled();
+	});
+
+	it('shows the space-saver error state and does not persist when no watchlist item matches the imdbID', () => {
+		const result = handleRemoveTag('tt9999999', 'classic');
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+	});
+
+	it('propagates the error instead of finishing the update when persisting the tag removal to localStorage fails', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.tags = ['classic'];
+		watchlistArray.push(movie);
+		global.localStorage.setItem = vi.fn(() => { throw new Error('QuotaExceededError'); });
+
+		expect(() => handleRemoveTag('tt0098258', 'classic')).toThrow();
+	});
+
+	it('shows the space-saver error state without throwing for invalid input (missing imdbID and tag entirely)', () => {
+		watchlistArray.push(createFullMovie('tt0098258'));
+
+		const result = handleRemoveTag(undefined, undefined);
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(result).toBeNull();
 	});
 });
