@@ -71,3 +71,6 @@ Read SCOPE.md at the root of .memory/ on startup. If it does not
 match this project, halt and report the mismatch before doing
 anything else. NOTE: Scope is verified against the git remote, not the directory name.
 
+### Formatting
+
+**Line breaks:** Do not use hard line breaks or manual line wraps within paragraphs. Let each paragraph exist as a single, continuous line of text. Only use line breaks to separate headers, paragraphs, and list items.
