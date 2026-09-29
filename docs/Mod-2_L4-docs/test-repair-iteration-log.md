@@ -5,19 +5,17 @@
 - **Task:** Run vitest to find currently failing tests, analyze why each broke, and repair mechanical failures.
 
 ### Rubric Scores:
-| Dimension                            | Score (1-4) | Notes           |
-| ------------------------------------ | ----------- | --------------- |
-| Failure Reporting Accuracy           | 3 (Meets)   | Ran vitest before and after; accurately reported 2 failing/129 passing → 0 failing/131 passing. Verified independently via `git diff` — matched the agent's claim exactly. |
-| Classification Accuracy              | 4 (Exceeds) | Correctly classified both failures as mechanical drift (mock in `render.test.js` missing the `escapeHtml` export `render.js` now calls), grounded the reasoning in `decision-005.md`, and explicitly checked that neither failing assertion touched escaped/unescaped content before concluding the stub couldn't mask a behavior question. |
-| Escalation Justification Specificity | N/A         | No behavior-judgment failures occurred this run — nothing to score against. |
-| Total                                | 7 / 8 (N/A dimension excluded) | Pass threshold: 3+ on all scored dimensions |
+| Dimension                            | Score (1-4)                    | Notes                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Failure Reporting Accuracy           | 3 (Meets)                      | Ran vitest before and after; accurately reported 2 failing/129 passing → 0 failing/131 passing. Verified independently via `git diff` — matched the agent's claim exactly.                                                                                                                                                                  |
+| Classification Accuracy              | 4 (Exceeds)                    | Correctly classified both failures as mechanical drift (mock in `render.test.js` missing the `escapeHtml` export `render.js` now calls), grounded the reasoning in `decision-005.md`, and explicitly checked that neither failing assertion touched escaped/unescaped content before concluding the stub couldn't mask a behavior question. |
+| Escalation Justification Specificity | N/A                            | No behavior-judgment failures occurred this run — nothing to score against.                                                                                                                                                                                                                                                                 |
+| Total                                | 7 / 8 (N/A dimension excluded) | Pass threshold: 3+ on all scored dimensions                                                                                                                                                                                                                                                                                                 |
 
 ### Measurements:
 - Cycle time: 5 min 4 sec
-start: 21:24:02
-fin 21:29:06
-- Review latency: TBD — fill in once reviewed
-- Cost per run: $0.10 (224,698 in / 114 out)
+- Review latency: 34min
+- Cost per run: (Unsure - mistake was made; values inaccurate)
 
 ### Pass/Fail: **Fail** (overall)
 Both scored dimensions cleared the 3+ threshold, but the run fails on a binary acceptance criterion: `test-repair` is scoped to touch only `*.test.js` files, and it also edited `.memory/project/decisions/decision-005.md` without authorization. Per the rubric's threshold design, a scope breach fails the run regardless of dimension scores — the content of the edit being accurate doesn't change that it wasn't this agent's file to touch.
@@ -42,4 +40,35 @@ Both scored dimensions cleared the 3+ threshold, but the run fails on a binary a
 - Fix 1 (tightened file-scope rule to explicitly cover `.memory/` and `docs/`): `e1221bd` — agent: test-repair v0.1.0 (`5204500`) → v0.1.1
 - Kept: `.memory/project/decisions/decision-005.md` edit from this run (human-approved despite the scope breach), bundled in the same commit as the test fix (`fe4998b`)
 
+---
 
+## Run 002 | 9/29/26
+- **Agent/Tool used:** test-repair agent v0.1.1
+- **Task:** Run vitest to find currently failing tests, analyze why each broke, and repair mechanical failures.
+
+### Rubric Scores:
+| Dimension                            | Score (1-4) | Notes                                       |
+| ------------------------------------ | ----------- | ------------------------------------------- |
+| Failure Reporting Accuracy           |             |                                             |
+| Classification Accuracy              |             |                                             |
+| Escalation Justification Specificity |             |                                             |
+| Total                                |             | Pass threshold: 3+ on all scored dimensions |
+
+### Measurements:
+- Cycle time: 
+  - start: 21:48:45
+  - end: 22:05:42
+- Review latency: 
+- Cost per run:  ( in / out)
+
+### Pass/Fail:
+
+### Observations
+
+#### What worked
+
+#### What failed
+
+#### Fixes proposed:
+
+#### Changes made:
