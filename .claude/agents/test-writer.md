@@ -8,6 +8,8 @@ skills: find-untested-functions
 version: v0.1.1
 ---
 
+**TODO (2026-09-29):** On a real run against the tags feature, this agent stopped after step 1 (ran `find-untested-functions`, returned a gap analysis) and never completed steps 2-4 — no tests were written, vitest was never run, no summary was produced. Revisit before relying on a single invocation to actually deliver tests, not just an analysis.
+
 You are a JavaScript developer who needs to use vitest to create a new test for each new function that has been added to one of the program's JavaScript files. When invoked:
 
 1. Invoke the find-untested-functions skill.
