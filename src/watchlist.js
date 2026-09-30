@@ -14,6 +14,9 @@ const FILTER_STORAGE_KEY = 'watchlistGenreFilter';
 // Key used to persist the chosen watchlist watched-status filter.
 const WATCHED_FILTER_STORAGE_KEY = 'watchlistWatchedFilter';
 
+// Key used to persist the chosen watchlist tag filter.
+const TAG_FILTER_STORAGE_KEY = 'watchlistTagFilter';
+
 // get list from localStorage
 function getLocalStorageWatchlist() {
 	return JSON.parse(localStorage.getItem("watchlist"));
@@ -40,6 +43,11 @@ export function initLocalStorageWatchlist() {
 	// if it exists, parse it.
 	try {
 		watchlistArray = getLocalStorageWatchlist();
+
+		// Backfill legacy items, then persist only if something changed.
+		if (backfillLegacyWatchlistFields()) {
+			setLocalStorageWatchlist();
+		}
 		return;
 	}
 
@@ -49,6 +57,27 @@ export function initLocalStorageWatchlist() {
 		watchlistArray = [];
 		resetLocalStorageWatchlist();
 	}
+}
+
+// Adds missing notes/tags fields to legacy watchlist items in place.
+// Returns true if any item was changed, so callers can skip no-op writes.
+function backfillLegacyWatchlistFields() {
+	let backfilledCount = 0;
+
+	watchlistArray.forEach(movie => {
+		let missingNotes = movie.notes == null;
+		let missingTags = movie.tags == null;
+
+		if (missingNotes) movie.notes = '';
+		if (missingTags) movie.tags = [];
+		if (missingNotes || missingTags) backfilledCount++;
+	});
+
+	if (backfilledCount > 0) {
+		console.log(`Backfilled notes/tags on ${backfilledCount} legacy watchlist item(s) at ${new Date().toISOString()}.`);
+	}
+
+	return backfilledCount > 0;
 }
 
 export async function handleWatchlistIconClick(eTarget) {
@@ -76,8 +105,9 @@ export async function handleWatchlistIconClick(eTarget) {
 	// set localStorage to match updated watchlist
 	setLocalStorageWatchlist();
 
-	// refresh genre options in case adding/removing changed what's available
+	// refresh genre and tag options in case adding/removing changed what's available
 	populateGenreFilterOptions();
+	populateTagFilterOptions();
 
 	// FIX LATER: this is clobbering the error messages.
 	// render content based on type of list
@@ -146,6 +176,48 @@ export function handleNoteChange(movieImdbID, noteText) {
 	movie.notes = trimmedNote;
 	setLocalStorageWatchlist();
 	console.log(`Note updated for imdbID "${movieImdbID}" at ${new Date().toISOString()}.`);
+}
+
+// Appends a new tag to the matching watchlist movie, then persists and re-renders.
+export function handleAddTag(movieImdbID, tagText) {
+	let movie = watchlistArray.find(movie => movie.imdbID === movieImdbID);
+	if (movie == null) {
+		getSpaceSaver('error');
+		console.error(`handleAddTag failed: no watchlist item found for imdbID "${movieImdbID}".`);
+		return null;
+	}
+
+	let trimmedTag = tagText.trim();
+	if (trimmedTag === '') {
+		return null;
+	}
+
+	let existingTags = movie.tags ?? [];
+
+	// Skip if this tag is already on the item.
+	if (existingTags.includes(trimmedTag)) {
+		return null;
+	}
+
+	movie.tags = [...existingTags, trimmedTag];
+	setLocalStorageWatchlist();
+	populateTagFilterOptions();
+	renderHtml();
+}
+
+// Removes one tag from the matching watchlist movie, then persists and re-renders.
+export function handleRemoveTag(movieImdbID, tagText) {
+	let movie = watchlistArray.find(movie => movie.imdbID === movieImdbID);
+	if (movie == null) {
+		getSpaceSaver('error');
+		console.error(`handleRemoveTag failed: no watchlist item found for imdbID "${movieImdbID}".`);
+		return null;
+	}
+
+	movie.tags = (movie.tags ?? []).filter(tag => tag !== tagText);
+	setLocalStorageWatchlist();
+	populateTagFilterOptions();
+	renderHtml();
 }
 
 function getClickedMovie(clickedImdbID) {
@@ -240,13 +312,26 @@ export function handleWatchedFilterChange(watchedStatus) {
 	renderHtml();
 }
 
-// Returns the watchlist narrowed by the saved genre and watched-status filters.
+// Reads the saved tag filter, defaulting to "all" if unset.
+export function getStoredTagFilter() {
+	return getStoredPreference(TAG_FILTER_STORAGE_KEY, 'all');
+}
+
+// Persists the chosen tag filter, then re-renders the list.
+export function handleTagFilterChange(tag) {
+	setStoredPreference(TAG_FILTER_STORAGE_KEY, tag);
+	renderHtml();
+}
+
+// Returns the watchlist narrowed by the saved genre, tag, and watched-status filters.
 export function getFilteredWatchlistArray() {
 	let genre = getStoredGenreFilter();
+	let tag = getStoredTagFilter();
 	let watchedFilter = getStoredWatchedFilter();
 
 	return watchlistArray
 		.filter(movie => genre === 'all' || getGenreList(movie.genre).includes(genre))
+		.filter(movie => tag === 'all' || (movie.tags ?? []).includes(tag))
 		.filter(movie => {
 			if (watchedFilter === 'watched') return movie.watched === true;
 			if (watchedFilter === 'unwatched') return movie.watched !== true;
@@ -285,6 +370,36 @@ function buildGenreOptionsHtml(genres) {
 	let optionsHtml = '<option value="all">All Genres</option>';
 	genres.forEach(genre => {
 		optionsHtml += `<option value="${genre}">${genre}</option>`;
+	});
+	return optionsHtml;
+}
+
+// Builds the sorted list of unique tags present in the watchlist.
+function getAvailableTags() {
+	let allTags = watchlistArray.flatMap(movie => movie.tags ?? []);
+	return [...new Set(allTags)].sort();
+}
+
+// Rebuilds the tag filter dropdown from tags in the watchlist.
+export function populateTagFilterOptions() {
+	let filterSelect = document.getElementById('tag-filter-select');
+	if (!filterSelect) return;
+
+	let availableTags = getAvailableTags();
+	filterSelect.innerHTML = buildTagOptionsHtml(availableTags);
+
+	// Fall back to "all" if the saved tag no longer exists in the list.
+	let storedTag = getStoredTagFilter();
+	let validTag = availableTags.includes(storedTag) ? storedTag : 'all';
+	filterSelect.value = validTag;
+	setStoredPreference(TAG_FILTER_STORAGE_KEY, validTag);
+}
+
+// Builds the <option> markup for the tag filter dropdown.
+function buildTagOptionsHtml(tags) {
+	let optionsHtml = '<option value="all">All Tags</option>';
+	tags.forEach(tag => {
+		optionsHtml += `<option value="${tag}">${tag}</option>`;
 	});
 	return optionsHtml;
 }

@@ -11,7 +11,8 @@ export function createMovieObject(movie, watchlistStatus) {
 		alt: `poster for ${movie.Title}`,
 		watchlist: watchlistStatus,
 		watched: false,
-		notes: ''
+		notes: '',
+		tags: []
 	};
 }
 

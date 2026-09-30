@@ -127,7 +127,30 @@ describe('generateWatchlistHtml', () => {
 		expect(() => generateWatchlistHtml()).not.toThrow();
 		expect(mainWrapper.innerHTML).toContain('movie-card');
 	});
+
+	it('renders a removable tag chip for each tag on a watchlist entry with a non-empty tags array', () => {
+		watchlistArray.push(createFakeMovie({ tags: ['classic', 'weekend'] }));
+
+		generateWatchlistHtml();
+
+		expect(mainWrapper.innerHTML).toContain('tag-chip');
+		expect(mainWrapper.innerHTML).toContain('classic');
+		expect(mainWrapper.innerHTML).toContain('weekend');
+		expect(mainWrapper.innerHTML).toContain('data-tag="classic"');
+		expect(mainWrapper.innerHTML).toContain('data-tag="weekend"');
+	});
+
+	it('renders the tag entry input but no tag chips for a watchlist entry with an empty tags array (empty/no-match result)', () => {
+		watchlistArray.push(createFakeMovie({ tags: [] }));
+
+		generateWatchlistHtml();
+
+		expect(mainWrapper.innerHTML).not.toContain('tag-chip"');
+		expect(mainWrapper.innerHTML).toContain('tag-input');
+		expect(mainWrapper.innerHTML).toContain('Add a tag');
+	});
 });
+
 
 describe('generateMoreDetails', () => {
 	function createFakeSummary() {

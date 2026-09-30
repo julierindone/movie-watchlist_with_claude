@@ -11,6 +11,10 @@ import {
   getStoredWatchedFilter,
   populateGenreFilterOptions,
   handleNoteChange,
+  handleAddTag,
+  handleRemoveTag,
+  handleTagFilterChange,
+  populateTagFilterOptions,
   watchlistArray
 } from './src/watchlist.js';
 
@@ -20,14 +24,16 @@ const searchBar = document.getElementById('search-bar');
 const sortSelect = document.getElementById('sort-select');
 const genreFilterSelect = document.getElementById('genre-filter-select');
 const watchedFilterSelect = document.getElementById('watched-filter-select');
+const tagFilterSelect = document.getElementById('tag-filter-select');
 
 // Check to see if watchlist exists in localStorage and create if it doesn't
 initLocalStorageWatchlist();
 
 if (document.getElementById('watchlist-page')) {
   if (watchlistArray.length > 0) {
-    // Rebuild genre options, then restore the saved sort and watched-filter choices.
+    // Rebuild genre and tag options, then restore the saved sort and watched-filter choices.
     populateGenreFilterOptions();
+    populateTagFilterOptions();
     watchedFilterSelect.value = getStoredWatchedFilter();
     sortSelect.value = getStoredSortPreference();
     handleSortChange(sortSelect.value);
@@ -63,6 +69,15 @@ document.addEventListener('click', (event) => {
     // MORE DETAILS
     else if (event.target.classList.contains('details-summary')) {
       handleMoreDetailsClick(event.target);
+    }
+    // REMOVE A TAG
+    else if (event.target.classList.contains('tag-chip-remove')) {
+      handleRemoveTag(event.target.dataset.imdbId, event.target.dataset.tag);
+    }
+    // ADD A TAG (via button)
+    else if (event.target.classList.contains('tag-add-btn')) {
+      let tagInput = document.getElementById(`tag-input-${event.target.dataset.imdbId}`);
+      handleAddTag(event.target.dataset.imdbId, tagInput.value);
     }
   }
   // LESS DETAILS
@@ -104,6 +119,20 @@ if (watchedFilterSelect) {
     handleWatchedFilterChange(watchedFilterSelect.value);
   });
 }
+
+if (tagFilterSelect) {
+  tagFilterSelect.addEventListener('change', () => {
+    handleTagFilterChange(tagFilterSelect.value);
+  });
+}
+
+// ADD TAG ON ENTER (focus stays in the tag input; keydown bubbles unlike blur)
+document.addEventListener('keydown', (event) => {
+  if (event.target.classList.contains('tag-input') && event.key === 'Enter') {
+    event.preventDefault();
+    handleAddTag(event.target.dataset.imdbId, event.target.value);
+  }
+});
 
 document.getElementById('main-wrapper').addEventListener('error', (event) => {
   const brokenImage = event.target;

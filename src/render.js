@@ -81,6 +81,7 @@ export function generateWatchlistHtml() {
 		filteredMovies.forEach(movie => {
 			let rating = generateRatingHtml(movie.rating);
 			let note = generateNoteHtml(movie);
+			let tags = generateTagsHtml(movie);
 			html +=
 				`<article class="movie-card">
 					<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
@@ -99,6 +100,7 @@ export function generateWatchlistHtml() {
 						</div>
 						<p class="plot">${movie.plot}</p>
 						${note}
+						${tags}
 					</div>
 				</article>
 				<hr class="card-divider">`;
@@ -136,6 +138,31 @@ function generateNoteHtml(movie) {
 			<label class="note-label" for="note-${movie.imdbID}">Notes</label>
 			<textarea class="note-input" id="note-${movie.imdbID}" data-imdb-id="${movie.imdbID}">${noteText}</textarea>
 		</div>`;
+}
+
+// Builds the tag chip list plus the entry input, escaped for innerHTML use.
+function generateTagsHtml(movie) {
+	let tags = movie.tags ?? [];
+	let chipsHtml = tags.map(tag => generateTagChipHtml(movie.imdbID, tag)).join('');
+	return `
+		<div class="movie-tags">
+			<label class="tags-label" for="tag-input-${movie.imdbID}">Tags</label>
+			<div class="tag-chip-list">${chipsHtml}</div>
+			<div class="tag-entry">
+				<input type="text" class="tag-input" id="tag-input-${movie.imdbID}" data-imdb-id="${movie.imdbID}" placeholder="Add a tag">
+				<button type="button" class="tag-add-btn" data-imdb-id="${movie.imdbID}">Add</button>
+			</div>
+		</div>`;
+}
+
+// Builds one removable tag chip, escaped to allow safe innerHTML use.
+function generateTagChipHtml(imdbID, tag) {
+	let safeTag = escapeHtml(tag);
+	return `
+		<span class="tag-chip">
+			${safeTag}
+			<button type="button" class="tag-chip-remove" data-imdb-id="${imdbID}" data-tag="${safeTag}">x</button>
+		</span>`;
 }
 
 // render content based on type of list
