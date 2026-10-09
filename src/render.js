@@ -15,20 +15,27 @@ export function generateExactResultHtml(resultsArray) {
 	// note: removed imdb-id from article el but can't remember why so I may need to add it back in.
 	let html =
 		`<article class="movie-card">
-		<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
-		<div class="movie-details">
-			<div class="title-watchlist">
-				<h2>${movie.title}</h2>
-				<i class="fa-solid fa-circle-${watchlistIcon}" data-imdb-id="${movie.imdbID}"></i>
-			</div>
-			<div class="runtime-year-genre-rating">
-				<div class="runtime-year-genre">
-					<p>${movie.year}&ensp;${movie.runtime}</p>
-					<p class="genre">${movie.genre}</p>
+			<div class="thumbnail-details">
+				<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
+				<div class="details">
+					<div class="title">
+						<h2>${movie.title}</h2>
+					</div>
+					<div class="runtime-year">
+							<p>${movie.year}&emsp;${movie.runtime}</p>
+					</div>
+					<div class="watchlist-rating">
+						${rating}
+						<div>
+							<i class="fa-solid fa-circle-${watchlistIcon}" data-imdb-id="${movie.imdbID}"></i>
+							</div>
+						</div>
+						<p class="genre">${movie.genre}</p>
+					</div>
 				</div>
-				${rating}
-			</div>
-			<p class="plot">${movie.plot}</p>
+				<div class="extended-details">
+					<p class="plot">${movie.plot}</p>
+				</div>
 		</div>
 	</article>
 	<hr class="card-divider">`;
@@ -38,24 +45,30 @@ export function generateExactResultHtml(resultsArray) {
 	addTilt();
 }
 
+// TODO: Finish converting fuzzyresults to match new styling
 export function generateFuzzyResultsHtml(resultsArray) {
 	let html = '';
 	for (let movie of resultsArray) {
 		let watchlistIcon = (movie.watchlist === true) ? "check" : "plus";
 		html +=
 			`<article class="movie-card fuzzy-results" data-imdb-id="${movie.imdbID}">
+			<div class="thumbnail-details">
 				<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
-				<div class="movie-details">
-					<div class="title-watchlist">
-						<h2>${movie.title}</h2>
-						<i class="fa-solid fa-circle-${watchlistIcon}" data-imdb-id="${movie.imdbID}"></i>
+				<div class="details">
+					<div class="title">
+					<h2>${movie.title}</h2>
 					</div>
-					<p class="year">${movie.year}</p>
-					<details class="more-details">
-						<summary class="details-summary" data-imdb-id="${movie.imdbID}">more</summary>
-						<div class="details-div"></div>
-					</details>
+					<div class="watchlist-rating">
+						<i class="fa-solid fa-circle-${watchlistIcon}" data-imdb-id="${movie.imdbID}"></i>
+						<p class="year">${movie.year}</p>
+					</div>
 				</div>
+			</div>
+				<details class="more-details">
+					<summary class="details-summary" data-imdb-id="${movie.imdbID}">more</summary>
+					<div class="details-div"></div>
+				</details>
+			</div>
 			</article>
 			<hr class="card-divider">`;
 	};
@@ -84,23 +97,29 @@ export function generateWatchlistHtml() {
 			let tags = generateTagsHtml(movie);
 			html +=
 				`<article class="movie-card">
-					<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
-					<div class="movie-details">
-						<div class="title-watchlist">
-							<h2>${movie.title}</h2>
-							<i class="fa-solid fa-circle-check" data-imdb-id="${movie.imdbID}"></i>
-							<i class="fa-${movie.watched ? 'solid' : 'regular'} fa-eye" data-imdb-id="${movie.imdbID}"></i>
-						</div>
-						<div class="runtime-year-genre-rating">
-							<div class="runtime-year-genre">
-								<p>${movie.year}&emsp;${movie.runtime}</p>
-								<p class="genre">${movie.genre}</p>
+					<div class="thumbnail-details">
+						<img class="thumbnail" src="${movie.thumbnail}" alt="${movie.alt}" data-tilt data-tilt-reverse="true" />
+						<div class="details">
+							<div class="title">
+								<h2>${movie.title}</h2>
 							</div>
-							${rating}
+							<div class="runtime-year">
+									<p>${movie.year}&emsp;${movie.runtime}</p>
+							</div>
+							<div class="watchlist-rating">
+								${rating}
+								<div>
+									<i class="fa-solid fa-circle-check" data-imdb-id="${movie.imdbID}"></i>
+									<i class="fa-${movie.watched ? 'solid' : 'regular'} fa-eye" data-imdb-id="${movie.imdbID}"></i>
+								</div>
+							</div>
+							<p class="genre">${movie.genre}</p>
 						</div>
+					</div>
+					<div class="extended-details">
 						<p class="plot">${movie.plot}</p>
-						${note}
 						${tags}
+						${note}
 					</div>
 				</article>
 				<hr class="card-divider">`;
@@ -135,22 +154,29 @@ function generateNoteHtml(movie) {
 	let noteText = escapeHtml(movie.notes ?? '');
 	return `
 		<div class="movie-note">
-			<label class="note-label" for="note-${movie.imdbID}">Notes</label>
-			<textarea class="note-input" id="note-${movie.imdbID}" data-imdb-id="${movie.imdbID}">${noteText}</textarea>
+		<label class="note-label" for="note-${movie.imdbID}">notes:</label>
+		<textarea
+			class="note-input"
+			id="note-${movie.imdbID}
+			aria-label="input-note"
+			data-imdb-id="${movie.imdbID}"
+			placeholder="write a note"
+		>${noteText}</textarea>
 		</div>`;
 }
 
+// TODO: Update so if there are 0 tags, the tag-chip-list is hidden.
 // Builds the tag chip list plus the entry input, escaped for innerHTML use.
 function generateTagsHtml(movie) {
 	let tags = movie.tags ?? [];
 	let chipsHtml = tags.map(tag => generateTagChipHtml(movie.imdbID, tag)).join('');
 	return `
 		<div class="movie-tags">
-			<label class="tags-label" for="tag-input-${movie.imdbID}">Tags</label>
+			<label class="tags-label" for="tag-input-${movie.imdbID}">tags:</label>
 			<div class="tag-chip-list">${chipsHtml}</div>
 			<div class="tag-entry">
-				<input type="text" class="tag-input" id="tag-input-${movie.imdbID}" data-imdb-id="${movie.imdbID}" placeholder="Add a tag">
-				<button type="button" class="tag-add-btn" data-imdb-id="${movie.imdbID}">Add</button>
+				<input type="text" class="tag-input" id="tag-input-${movie.imdbID}" data-imdb-id="${movie.imdbID}" placeholder="add a tag">
+				<button type="button" class="tag-add-btn" data-imdb-id="${movie.imdbID}">add</button>
 			</div>
 		</div>`;
 }
@@ -161,7 +187,7 @@ function generateTagChipHtml(imdbID, tag) {
 	return `
 		<span class="tag-chip">
 			${safeTag}
-			<button type="button" class="tag-chip-remove" data-imdb-id="${imdbID}" data-tag="${safeTag}">x</button>
+			<button type="button" class="tag-chip-remove fa-solid fa-circle-xmark" data-imdb-id="${imdbID}" data-tag="${safeTag}"></button>
 		</span>`;
 }
 
@@ -176,7 +202,7 @@ export function generateMoreDetails(detailsSummary, movieDetails) {
 	detailsSummary.style.display = 'none';
 	let rating = generateRatingHtml(movieDetails.rating);
 	let detailsHTML = `
-		<div class="runtime-year-genre-rating">
+		<div class="runtime-year-genre">
 			<div class="runtime-year-genre">
 					<p>${movieDetails.runtime}</p>
 					<p class="genre">${movieDetails.genre}</p>

@@ -1,12 +1,16 @@
+/* TODO: Style sort/filters. */
+
 :root {
   --white: hsl(0 0% 95% / 1);
   --gray: hsl(0, 0%, 7.5%);
+  --dark-gray: hsl(0, 0%, 9%);
   --medium-gray: hsl(0, 0%, 14%);
   --light-gray: hsl(0, 0%, 52%);
   --black: #101010;
-  --light-ice-blue: hsl(190 40.15% 80%);
+  --light-ice-blue: hsl(190 50% 80%);
   --ice-blue: hsl(190, 35%, 55%);
-  --transp-ice-blue: hsl(187, 28%, 49%, 60%);
+  --dark-ice-blue: hsl(190, 35%, 35%);
+  --transp-ice-blue: hsl(187, 28%, 59%, 55%);
   --yellow: hsl(52, 100%, 50%);
   --black-text-shadow: 3px 3px 1px var(--black), 1.15px -1.15px 1px var(--black), -1.15px 1.15px 1px var(--black), -1.15px -1.15px 1px var(--black);
   --gray-border: solid .5px #797979;
@@ -40,7 +44,8 @@ main {
 body,
 form,
 input,
-button {
+button,
+textarea {
   font-family: 'Open Sans', sans-serif;
 }
 
@@ -228,7 +233,7 @@ form {
   display: flex;
   flex-flow: column wrap;
   background-color: var(--black);
-  padding-top: 1em;
+  padding-top: .75em;
 }
 
 .space-saver {

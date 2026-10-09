@@ -86,7 +86,7 @@ export async function handleWatchlistIconClick(eTarget) {
 		getSpaceSaver('error');
 		return null;
 	}
-	let detailsDiv = eTarget.closest('.movie-details').querySelector('.details-div');
+	let detailsDiv = eTarget.closest('.details').querySelector('.details-div');
 
 	// add or remove as needed
 	if (onWatchlist(movie.imdbID)) {

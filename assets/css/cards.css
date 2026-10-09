@@ -1,3 +1,5 @@
+/* TODO: Finish fixing styling/html updates! for fuzzy results */
+
 /* =============================
 ================================
 		CARD STYLES
@@ -9,6 +11,7 @@
   text-align: left;
   padding-inline: 4.3vw;
   margin-inline: 0;
+  width: 100%;
 
   & article:first-of-type {
     margin-top: 0.1em;
@@ -27,79 +30,148 @@
   }
 }
 
-/* TODO: convert to grid using media objects guidelines
-  https://developer.mozilla.org/en-US/docs/Web/CSS/How_to/Layout_cookbook/Media_objects */
 article.movie-card {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 0.95em;
+  gap: 0.25em;
   padding-block: 0.65rem;
   margin-block: 0.9rem;
 }
 
-div.movie-details {
-  flex: 1 1;
+div.thumbnail-details {
+  font-size: clamp(0.9rem, 0.8rem + 0.5vw, 1rem);
+  display: flex;
+  gap: .8rem;
+  align-items: center;
+
+  div.details {
+    display: flex;
+    flex: 1 1;
+    flex-direction: column;
+    gap: .15rem;
+
+    h2 {
+      font-size: clamp(1rem, 0.72rem + 1.5vw, 1.5rem);
+      font-weight: 500;
+      letter-spacing: .02em;
+      text-wrap: wrap;
+    }
+
+    p {
+      letter-spacing: normal;
+    }
+
+    > .runtime-year {
+      font-size: .91em;
+    }
+
+    > .watchlist-rating {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: .8rem;
+      margin-top: 0.3em;
+
+      > div {
+        display: flex;
+        gap: .8rem;
+      }
+
+      #rating {
+        font-size: 0.91em;
+      }
+    }
+
+    .genre {
+      font-size: .88em;
+    }
+  }
+}
+
+/* This is what i'm switching over to for holding plot/notes/tags. */
+div.extended-details {
   display: flex;
   flex-direction: column;
+  gap: .7rem;
   font-size: clamp(0.8rem, 0.78rem + 0.5vw, 1rem);
-  margin-top: 0.1em;
+  width: 100%;
 
-  > .title-watchlist {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.85em;
-    align-items: center;
-  }
-
-  & h2 {
-    font-size: clamp(1rem, 0.62rem + 1.5vw, 1.15rem);
-    font-weight: 500;
-    text-wrap: wrap;
-  }
-
-  p {
-    letter-spacing: normal;
-  }
-
-  & .runtime-year-genre-rating {
-    display: flex;
-    gap: 0.05em;
-    justify-content: space-between;
-    margin-top: 0.4em;
-
-    > .runtime-year-genre {
-      display: flex;
-      gap: 0.1em;
-      flex-direction: column;
-      flex: 1 1;
-
-      > p:first-of-type {
-        font-size: 0.92em;
-      }
-
-      > p:last-of-type {
-        font-size: 0.85em;
-      }
-    }
-
-    > #rating {
-      align-self: center;
-      font-size: 0.9em;
-      font-weight: 350;
-    }
-  }
-
-  & p.plot,
-  & p.year {
-    flex: 4 1;
-    margin-top: 0.55em;
+  & p.plot {
+    margin-top: 0.3em;
     font-size: 0.93em;
     line-height: 1.475;
   }
 
-  & p.year {
-    margin-top: 0;
+  .note-label, .tags-label {
+    font-size: .925em;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    color: var(--light-ice-blue);
+  }
+
+  .note-input {
+    color: var(--white);
+    font-size: .95em;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    background-color: var(--dark-gray);
+    border-radius: .7em;
+    border: var(--transp-ice-blue-border);
+    width: 100%;
+    min-height: 3em;
+    padding: .55em .75em;
+    margin-top: 0.5em;
+  }
+
+  .movie-tags * {
+    border-radius: .7em;
+    padding: .25em .75em .25em;
+  }
+
+  .tag-chip-list {
+    display: flex;
+    gap: .25em;
+    margin-block: 0.35em 0.15em;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    /* Firefox */
+    &::-webkit-scrollbar {
+      display: none;
+      /* Chrome, Safari, Edge */
+    }
+  }
+
+  .tag-chip {
+    flex: 0 1;
+    font-size: .92em;
+    text-wrap: nowrap;
+    background-color: var(--transp-ice-blue);
+
+    > button {
+      color: var(--white);
+      background: none;
+      border: none;
+    }
+  }
+
+  .tag-entry {
+    margin-top: 0.3em;
+
+    > input, button {
+      color: var(--dark-ice-blue);
+      font-weight: 650;
+      background-color: var(--white);
+      border: none;
+
+      &::placeholder {
+        color: var(--ice-blue);
+        opacity: 80%;
+      }
+    }
   }
 }
 
@@ -151,13 +223,14 @@ article.movie-card.fuzzy-results {
   width: min(120px, 25%);
   font-size: .8rem;
   object-fit: contain;
-  margin-top: 0.3rem;
   background: var(--medium-gray);
+  border-radius: .65rem;
 }
 
 .fa-circle-plus,
-.fa-circle-check {
-  font-size: 1.45em;
+.fa-circle-check,
+.fa-eye {
+  font-size: 1.4em;
 
   &:hover {
     transform: scale(1.12);
@@ -169,13 +242,18 @@ article.movie-card.fuzzy-results {
   font-size: 1.6em;
 }
 
-.fa-circle-check {
+.fa-circle-check,
+.fa-eye.fa-solid {
   color: var(--light-ice-blue);
   /* padding-top: 0.28em; */
 }
 
+.fa-eye.fa-regular {
+  opacity: .6;
+}
+
 .fa-star {
-  font-size: .8em;
+  font-size: 1.1em;
   margin-right: 0.3em;
   color: var(--yellow);
 }
