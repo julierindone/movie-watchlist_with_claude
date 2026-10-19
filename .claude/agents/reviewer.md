@@ -6,14 +6,16 @@ description: >
   them. Invoked after the Implementer.
 model: sonnet
 tools:
-  - mcp__coursetools__file_read
-  - mcp__coursetools__codebase_search
+  - Read 
+  - Glob
+  - Grep 
 disallowedTools:
-  - mcp__coursetools__file_write
-  - mcp__coursetools__shell
-  - mcp__coursetools__test_runner
-  - mcp__coursetools__task_tracker
-  - mcp__coursetools__web_search
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - Agent
 autonomy: high
 version: 1.1.2
 ---

@@ -40,7 +40,6 @@ Invoke the subagents in this order, passing the named input to each:
 2. implementer receives: plan + file list
 3. reviewer receives: modified files
 4. tester receives: modified files
-5. project-manager receives: assembled run summary
 
 6. The `orchestrator` invokes the `planner` with `PRD.md`.
 7. **After human approval:** The `orchestrator` sends the resulting plan and file list to the `implementer`.
@@ -65,12 +64,10 @@ After each subagent returns, check its result against that phase's acceptance cr
 ### Human-in-the-loop checkpoints
 
 - After the planner: pause and show the plan to the human for approval before any code is written.
-- Before the project-manager updates the ticket: pause for human confirmation, since changing the shared ticket is a consequential, outward-facing action.
 
 ## Orchestration context
 
 - Invoked by: the human, who provides the workflow task.
 - Input format: the feature request and the repo path.
-- Output format: a final summary (what was built, review outcome, test outcome,
-  ticket status) written to docs/run-summary.md.
+- Output format: a final summary (what was built, review outcome, test outcome) written to docs/run-summary.md.
 - Loops back to: subagents, per the branching logic above.
