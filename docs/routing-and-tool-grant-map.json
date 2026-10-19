@@ -1,0 +1,8 @@
+{
+  "planner": ["Read", "Glob", "Grep"],
+  "implementer": ["Read", "Write", "Edit", "Glob", "Grep"],
+  "reviewer": ["Read", "Glob", "Grep"],
+  "tester": ["Read", "Bash"],
+  "researcher": ["WebSearch"],
+  "orchestrator": ["Read", "Write", "Agent"]
+}
