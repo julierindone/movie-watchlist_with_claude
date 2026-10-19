@@ -10,7 +10,7 @@ function addTilt() {
 export function generateExactResultHtml(resultsArray) {
 	let movie = resultsArray[0];
 	let watchlistIcon = (movie.watchlist === true) ? "check" : "plus";
-	let rating = generateRatingHtml(movie.rating);
+	let rating = generateRatingHtml(movie.rating, movie.imdbID);
 
 	// note: removed imdb-id from article el but can't remember why so I may need to add it back in.
 	let html =
@@ -92,7 +92,7 @@ export function generateWatchlistHtml() {
 		let html = ``;
 
 		filteredMovies.forEach(movie => {
-			let rating = generateRatingHtml(movie.rating);
+			let rating = generateRatingHtml(movie.rating, movie.imdbID);
 			let note = generateNoteHtml(movie);
 			let tags = generateTagsHtml(movie);
 			html +=
@@ -136,10 +136,10 @@ export function generateWatchlistHtml() {
 	}
 }
 
-function generateRatingHtml(rating) {
+function generateRatingHtml(rating, imdbID) {
 	if (rating) {
 		return `
-			<p id="rating">
+			<p id="rating-${imdbID}">
 				<i class="fa-solid fa-star"></i>
 				${rating}
 			</p>`;
@@ -200,7 +200,7 @@ export function renderHtml() {
 
 export function generateMoreDetails(detailsSummary, movieDetails) {
 	detailsSummary.style.display = 'none';
-	let rating = generateRatingHtml(movieDetails.rating);
+	let rating = generateRatingHtml(movieDetails.rating, movieDetails.imdbID);
 	let detailsHTML = `
 		<div class="runtime-year-genre">
 			<div class="runtime-year-genre">
@@ -214,7 +214,7 @@ export function generateMoreDetails(detailsSummary, movieDetails) {
 		`;
 
 	detailsSummary.nextElementSibling.innerHTML = detailsHTML;
-	generateRatingHtml(movieDetails.rating);
+	generateRatingHtml(movieDetails.rating, movieDetails.imdbID);
 }
 
 // TODO: Make operational for SEARCH ONLY. I Think the watch one should be a separate function.
