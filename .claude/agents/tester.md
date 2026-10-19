@@ -6,14 +6,16 @@ description: >
   after the Reviewer. Does not edit code to make failing tests pass.
 model: sonnet
 tools:
-  - mcp__coursetools__file_read
-  - mcp__coursetools__test_runner
+  - Read
+  - Bash
 disallowedTools:
-  - mcp__coursetools__file_write
-  - mcp__coursetools__codebase_search
-  - mcp__coursetools__shell
-  - mcp__coursetools__task_tracker
-  - mcp__coursetools__web_search
+  - Write
+  - Edit
+  - Glob
+  - Grep 
+  - WebFetch
+  - WebSearch
+  - Agent
 autonomy: medium
 version: 1.0.0
 ---
@@ -46,4 +48,4 @@ When invoked:
 - Loops back to: nothing on its own. If this report shows any failing
   test, the orchestrator loops back to the Implementer with the failures
   as input, then re-invokes the Tester. Otherwise the orchestrator
-  proceeds to the Project Manager.
+  assembles the final run summary.
