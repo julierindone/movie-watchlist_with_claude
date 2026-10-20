@@ -147,7 +147,7 @@ describe('generateWatchlistHtml', () => {
 
 		expect(mainWrapper.innerHTML).not.toContain('tag-chip"');
 		expect(mainWrapper.innerHTML).toContain('tag-input');
-		expect(mainWrapper.innerHTML).toContain('Add a tag');
+		expect(mainWrapper.innerHTML).toContain('add a tag');
 	});
 });
 

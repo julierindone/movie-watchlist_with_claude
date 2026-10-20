@@ -59,7 +59,7 @@ export function initLocalStorageWatchlist() {
 	}
 }
 
-// Adds missing notes/tags fields to legacy watchlist items in place.
+// Adds missing notes/tags/userRating fields to legacy watchlist items in place.
 // Returns true if any item was changed, so callers can skip no-op writes.
 function backfillLegacyWatchlistFields() {
 	let backfilledCount = 0;
@@ -67,14 +67,17 @@ function backfillLegacyWatchlistFields() {
 	watchlistArray.forEach(movie => {
 		let missingNotes = movie.notes == null;
 		let missingTags = movie.tags == null;
+		// userRating's valid "unrated" state is null, so only backfill when the field is absent entirely.
+		let missingUserRating = movie.userRating === undefined;
 
 		if (missingNotes) movie.notes = '';
 		if (missingTags) movie.tags = [];
-		if (missingNotes || missingTags) backfilledCount++;
+		if (missingUserRating) movie.userRating = null;
+		if (missingNotes || missingTags || missingUserRating) backfilledCount++;
 	});
 
 	if (backfilledCount > 0) {
-		console.log(`Backfilled notes/tags on ${backfilledCount} legacy watchlist item(s) at ${new Date().toISOString()}.`);
+		console.log(`Backfilled notes/tags/userRating on ${backfilledCount} legacy watchlist item(s) at ${new Date().toISOString()}.`);
 	}
 
 	return backfilledCount > 0;
@@ -220,6 +223,31 @@ export function handleRemoveTag(movieImdbID, tagText) {
 	renderHtml();
 }
 
+// Sentinel values on the rating <select> that mean "no rating"/"remove rating".
+const UNRATED_SELECT_VALUES = ['', 'remove'];
+
+// Saves the selected user rating (or clears it) on the matching watchlist movie.
+export function handleUserRatingChange(movieImdbID, selectedValue) {
+	let movie = watchlistArray.find(movie => movie.imdbID === movieImdbID);
+	if (movie == null) {
+		getSpaceSaver('error');
+		console.error(`handleUserRatingChange failed: no watchlist item found for imdbID "${movieImdbID}".`);
+		return null;
+	}
+
+	let newUserRating = UNRATED_SELECT_VALUES.includes(selectedValue) ? null : Number(selectedValue);
+
+	// Skip the write when the rating is unchanged, so the log stays meaningful.
+	if ((movie.userRating ?? null) === newUserRating) {
+		return null;
+	}
+
+	movie.userRating = newUserRating;
+	setLocalStorageWatchlist();
+	console.log(`User rating updated to "${newUserRating}" for imdbID "${movieImdbID}" at ${new Date().toISOString()}.`);
+	renderHtml();
+}
+
 function getClickedMovie(clickedImdbID) {
 	if (document.getElementById('watchlist-page')) {
 		return watchlistArray.find(movie => movie.imdbID === clickedImdbID);
@@ -261,6 +289,9 @@ function sortWatchlistArray(sortType) {
 	else if (sortType === 'rating') {
 		watchlistArray.sort(compareByRating);
 	}
+	else if (sortType === 'userRating') {
+		watchlistArray.sort(compareByUserRating);
+	}
 }
 
 // Compares titles alphabetically, A to Z.
@@ -276,6 +307,11 @@ function compareByYear(movieA, movieB) {
 // Compares ratings numerically, highest to lowest.
 function compareByRating(movieA, movieB) {
 	return getRatingValue(movieB.rating) - getRatingValue(movieA.rating);
+}
+
+// Compares user ratings numerically, highest to lowest; unrated movies sort last.
+function compareByUserRating(movieA, movieB) {
+	return (movieB.userRating ?? -Infinity) - (movieA.userRating ?? -Infinity);
 }
 
 // Parses a year string into a number; missing years sort last.

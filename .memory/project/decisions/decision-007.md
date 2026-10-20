@@ -3,6 +3,8 @@
 **Date:** 2026-09-29
 **Review by:** 2026-12-28
 **Status:** Active
+**Updated:** 2026-10-19 — resolved the test conflict noted below by updating
+the test's expected fixture rather than changing backfill behavior.
 
 **Decision:** `initLocalStorageWatchlist()` now backfills missing
 `notes`/`tags` fields onto legacy watchlist items via
@@ -37,4 +39,10 @@ behavior-judgment call rather than guessing (see
 `docs/Mod-2_L4-docs/test-repair-iteration-log.md`, Runs 002-003) —
 whoever picks this up still needs to decide whether to update the
 test's expected fixture to include the backfilled fields, or reconsider
-whether load-time persistence is the right call. Not yet resolved.
+whether load-time persistence is the right call.
+
+**Resolved 2026-10-19:** the test's expected fixture was updated, not the
+backfill behavior. The test now derives its expectation from the stored
+fixture plus the three backfilled fields (`notes: ''`, `tags: []`,
+`userRating: null` — `userRating` joined this gap via the user-rating
+feature) instead of asserting equality against the raw fixture.
