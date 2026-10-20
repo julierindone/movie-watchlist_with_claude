@@ -1,4 +1,5 @@
 # Product Requirements Document
+version: 1.0.1
 
 ## Description
 Allow user to rate movies they've watched using a 10-star system.
@@ -8,16 +9,16 @@ A developer invokes `claude "build feature detailed in docs/prd.md"` from the re
 
 ## Actions
 1. Read the watchlist.js, normalize.js, and render.js source files to understand how other conditional fields (watched, notes, tags) have been implemented.
-2.Update parent node to fit new element:
+2. Update parent node to fit new element:
 	1. On the watchlist page, create a div as a new first child inside the div that has class "watchlist-rating" and give it the class `ratings`. 
 	2. Move `<p id="rating-{imdbID}">` inside the div, and create a second element, `#user-rating-{imdbID}`. 
-	3. Add the user rating field. 
+	3. Add the userRating field. 
    - If the user has not already rated the film, it should display an empty star icon and the word RATE.
    - If they have already rated the film, a star with their rating should display to its right.
    - Once the user has selected a value from the dropdown, it should hide again and instead of the word "RATE", the rating they chose should be displayed.
    - Dropdown should close when user selects a value toggle is clicked again, or the user clicks outside it. 
 3. Add functionality.
-	- When user clicks a `rating-{imdbID}` element, a dropdown menu appears with integers 1-10, with an empty field being the default.
+	- When user clicks a `user-rating-{imdbID}` element, a dropdown menu appears with integers 1-10, with an empty field being the default.
 	- The value should be stored as part of the movie object (just as notes and watched are), with the initial value of `null`.
 4. Add `user rating` to sort options - highest to lowest, with unrated movies last.
 
