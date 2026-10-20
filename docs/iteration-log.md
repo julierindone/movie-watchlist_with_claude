@@ -39,5 +39,4 @@
 - Add an explicit "plan approved by human at [time]" line to the orchestrator's run-summary template so the first human-in-the-loop checkpoint is traceable from the artifact itself, not just from memory of the session.
 
 #### Changes made:
-None — this run was an assessment only; no code or process changes were applied as part of this review.
-
+- Fix 1: fixed unrelated broken tests so run 002 starts from a clean slate: ef186f2 — tests: repair tests broken by tagging feature, add tag-escaping coverage.
