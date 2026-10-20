@@ -69,5 +69,5 @@ After each subagent returns, check its result against that phase's acceptance cr
 
 - Invoked by: the human, who provides the workflow task.
 - Input format: the feature request and the repo path.
-- Output format: a final summary (what was built, review outcome, test outcome) written to docs/run-summary.md.
+- Output format: a final summary (what was built, review outcome, test outcome, "plan approved by human at [time]") - written to docs/run-summary.md.
 - Loops back to: subagents, per the branching logic above.
