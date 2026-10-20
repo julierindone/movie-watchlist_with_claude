@@ -34,7 +34,10 @@ stale for items nobody touches again.
 migration makes that assertion fail for any fixture missing `notes`/
 `tags`. The `test-repair` agent correctly left it failing as a
 behavior-judgment call rather than guessing (see
-`docs/Mod-2_L4-docs/test-repair-iteration-log.md`, Runs 002-003) —
-whoever picks this up still needs to decide whether to update the
-test's expected fixture to include the backfilled fields, or reconsider
-whether load-time persistence is the right call. Not yet resolved.
+`docs/Mod-2_L4-docs/test-repair-iteration-log.md`, Runs 002-003).
+
+**Resolved 2026-10-20:** Julie confirmed load-time persistence stands
+as designed. The test's expected fixture in `src/watchlist.test.js`
+was updated to `storedMovies.map(movie => ({ ...movie, notes: '',
+tags: [] }))` to reflect the backfilled fields `toEqual` compares
+against. All 164 tests pass.

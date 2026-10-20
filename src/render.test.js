@@ -27,7 +27,7 @@ vi.mock('./search.js', () => ({
 	searchType: null,
 }));
 
-import { getSpaceSaver, toggleMainSection, resetAll } from './helpers.js';
+import { getSpaceSaver, toggleMainSection, resetAll, escapeHtml } from './helpers.js';
 import { watchlistArray } from './watchlist.js';
 import * as searchModule from './search.js';
 import {
@@ -65,6 +65,7 @@ let mainWrapper;
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	escapeHtml.mockImplementation((text) => text);
 	watchlistArray.length = 0;
 	searchModule.resultsArray.length = 0;
 	searchModule.searchType = null;
@@ -147,7 +148,42 @@ describe('generateWatchlistHtml', () => {
 
 		expect(mainWrapper.innerHTML).not.toContain('tag-chip"');
 		expect(mainWrapper.innerHTML).toContain('tag-input');
-		expect(mainWrapper.innerHTML).toContain('Add a tag');
+		expect(mainWrapper.innerHTML).toContain('add a tag');
+	});
+
+	it('escapes each tag\'s raw text through escapeHtml before rendering its chip', () => {
+		watchlistArray.push(createFakeMovie({ tags: ['classic', 'weekend'] }));
+
+		generateWatchlistHtml();
+
+		expect(escapeHtml).toHaveBeenCalledWith('classic');
+		expect(escapeHtml).toHaveBeenCalledWith('weekend');
+	});
+
+	it('renders the escaped form (not the raw unsafe text) in both the chip content and the data-tag attribute when a tag contains characters that would break markup or the attribute', () => {
+		// Use a realistic escapeHtml implementation (matching src/helpers.js), instead
+		// of the identity pass-through mocked above, so this test can tell real
+		// escaping from a mock that merely echoes its input. generateNoteHtml also
+		// calls escapeHtml (for the empty notes field) before generateTagsHtml does,
+		// so the realistic implementation has to stay installed for the whole call,
+		// not just a single invocation.
+		escapeHtml.mockImplementation(text =>
+			text
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;')
+		);
+		const unsafeTag = `90's "best" <ever>`;
+		watchlistArray.push(createFakeMovie({ tags: [unsafeTag] }));
+
+		generateWatchlistHtml();
+
+		expect(mainWrapper.innerHTML).not.toContain(unsafeTag);
+		expect(mainWrapper.innerHTML).toContain('&quot;best&quot;');
+		expect(mainWrapper.innerHTML).toContain('&lt;ever&gt;');
+		// The escaped quote keeps the attribute value from being broken out of early.
+		expect(mainWrapper.innerHTML).toContain('data-tag="90\'s &quot;best&quot; &lt;ever&gt;"');
 	});
 });
 

@@ -19,7 +19,7 @@ Maintained by: Julie Rindone
 
 - `decisions/decision-006.md` — Records the decision to enter tags as removable chips and filter them via a single-select dropdown that AND-chains into the existing genre/watched-status filters, rather than a comma-separated input or multi-select. Recorded 2026-09-29. Review by 2026-12-28.
 
-- `decisions/decision-007.md` — Records the decision to backfill missing `notes`/`tags` onto legacy watchlist items in `initLocalStorageWatchlist()` and persist immediately, rather than relying solely on read-site `??` fallbacks; notes the still-unresolved test conflict this creates. Recorded 2026-09-29. Review by 2026-12-28.
+- `decisions/decision-007.md` — Records the decision to backfill missing `notes`/`tags` onto legacy watchlist items in `initLocalStorageWatchlist()` and persist immediately, rather than relying solely on read-site `??` fallbacks. Test conflict resolved 2026-10-20 (fixture updated). Recorded 2026-09-29. Review by 2026-12-28.
 
 - `../knowledge/coding-standards.md` — Coding standards for this project. Human-maintained, read-only. Last reviewed 2026-09-23.
 

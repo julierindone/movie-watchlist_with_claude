@@ -105,7 +105,9 @@ describe('initLocalStorageWatchlist', () => {
 
 		initLocalStorageWatchlist();
 
-		expect(watchlistArray).toEqual(storedMovies);
+		expect(watchlistArray).toEqual(
+			storedMovies.map(movie => ({ ...movie, notes: '', tags: [] }))
+		);
 	});
 
 	it('initializes an empty watchlist in localStorage when none exists yet (first run / empty result)', () => {
