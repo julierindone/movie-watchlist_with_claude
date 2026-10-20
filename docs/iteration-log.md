@@ -40,3 +40,4 @@
 
 #### Changes made:
 - Fix 1: fixed unrelated broken tests so run 002 starts from a clean slate: ef186f2 — tests: repair tests broken by tagging feature, add tag-escaping coverage.
+- Fix 2: 7abf9d6 - agent: added time of human approval line to run-summary requirements - CLAUDE.md & orchestrator.md
