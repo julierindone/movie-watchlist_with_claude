@@ -5,14 +5,14 @@
 - **Task:** Build the user-rating feature (1–10 dropdown on watchlist cards) per `docs/prd.md`.
 
 ### Rubric Scores:
-| Dimension                           | Score (1-4) | Notes           |
-| ----------------------------------- | ----------- | --------------- |
-| PRD Fidelity                        | 4           | Every Action, Decision Event, and Acceptance Criterion traced to code and verified (always-opens-regardless-of-state, overwrite-not-duplicate, conditional remove-rating option, unrated-last sort, blank default). Exceeds: the PRD's Action 3 text ("`rating-{imdbID}`") collided with the pre-existing critic-rating id, and the team caught this and checked in with the human on the `user-` prefix before implementing, rather than guessing — this is exactly the ambiguity-is-an-open-question behavior planner.md/implementer.md require, and happened more than once across the run. The `userRating` field-naming rationale is also documented in `run-summary.md`'s "Key decisions" section. |
+| Dimension                           | Score (1-4) | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PRD Fidelity                        | 4           | Every Action, Decision Event, and Acceptance Criterion traced to code and verified (always-opens-regardless-of-state, overwrite-not-duplicate, conditional remove-rating option, unrated-last sort, blank default). Exceeds: the PRD's Action 3 text ("`rating-{imdbID}`") collided with the pre-existing critic-rating id, and the team caught this and checked in with the human on the `user-` prefix before implementing, rather than guessing — this is exactly the ambiguity-is-an-open-question behavior planner.md/implementer.md require, and happened more than once across the run. The `userRating` field-naming rationale is also documented in `run-summary.md`'s "Key decisions" section.                                                                                                     |
 | Scope & Process Compliance          | 4           | Each role stayed in its tool/file lane; the reviewer's Critical/Warning labels and fix guidance survived into `run-summary.md` across all 3 passes; ambiguities were raised to the human rather than resolved silently (see PRD Fidelity note). Exceeds: pass 2 produced a Critical regression and still hadn't cleared the original issue — the orchestrator correctly applied the "same phase fails its gate twice → halt and escalate" rule, got human sign-off on root-cause guidance, and documented that pass 3 cleared the gate before proceeding to the tester. (Earlier in this review I flagged `assets/css/*` and `index.html` changes in the working tree as scope violations — confirmed by the human those were the human's own unrelated manual edits, not the orchestration's; disregarded.) |
-| Accessibility & Integration Quality | 3           | Native `<button>` + native `<select>` gives full keyboard operability end-to-end (focusable, arrow-key/Enter selection, native Escape handling) with no custom popup/listbox to maintain; `aria-label` added only where no visible label exists, consistent with decision-005's precedent; `userRating` reads/writes/normalizes/backfills/sorts exactly like sibling `notes`/`tags`/`watched` fields, no parallel storage mechanism. Not "Exceeds": focus is dropped to document body after a re-render (e.g. after "remove rating"), but this matches the app's existing pattern (no field returns focus post-rerender today), so it's neither a new regression nor an anticipated edge case beyond PRD scope. |
-| Total                               | 11 / 12     | Pass threshold: **PASS** — all three dimensions ≥3, feature behaves as PRD describes, reviewer reported no unresolved Critical issues after pass 3, tester reported 164/164 passing, human-in-the-loop checkpoints were honored. |
+| Accessibility & Integration Quality | 3           | Native `<button>` + native `<select>` gives full keyboard operability end-to-end (focusable, arrow-key/Enter selection, native Escape handling) with no custom popup/listbox to maintain; `aria-label` added only where no visible label exists, consistent with decision-005's precedent; `userRating` reads/writes/normalizes/backfills/sorts exactly like sibling `notes`/`tags`/`watched` fields, no parallel storage mechanism. Not "Exceeds": focus is dropped to document body after a re-render (e.g. after "remove rating"), but this matches the app's existing pattern (no field returns focus post-rerender today), so it's neither a new regression nor an anticipated edge case beyond PRD scope.                                                                                              |
+| Total                               | 11 / 12     | Pass threshold: **PASS** — all three dimensions ≥3, feature behaves as PRD describes, reviewer reported no unresolved Critical issues after pass 3, tester reported 164/164 passing, human-in-the-loop checkpoints were honored.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-### Measurements (HUMAN FILLS OUT):
+### Measurements:
 - Cycle time: 46 min 5 sec
 - Review latency: 88 min
 - Cost per run: $5.65 ( 3.6M in / 37.9k out)
@@ -41,3 +41,44 @@
 #### Changes made:
 - Fix 1: fixed unrelated broken tests so run 002 starts from a clean slate: ef186f2 — tests: repair tests broken by tagging feature, add tag-escaping coverage.
 - Fix 2: 7abf9d6 - agent: added time of human approval line to run-summary requirements - CLAUDE.md & orchestrator.md
+
+---
+
+## Run 2 | 2026-10-20
+
+### Rubric Scores:
+| Dimension                           | Score (1-4) | Notes                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ----------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PRD Fidelity                        | 3           | Every Action, Decision Event, and Acceptance Criterion is implemented and traceable to a PRD line (overwrite-not-duplicate, "remove rating" option, dropdown opens regardless of prior state, sort highest-to-lowest with unrated last).                                                                                                                                                                                   |
+| Scope & Process Compliance          | 4           | Every role stayed in its tool/scope boundary; plan approval is timestamped before any code; the Tester-loop rule fired for real (1/166 stale-fixture failure → fixed → 166/166) and is explicitly named, which is the Exceeds bar. Minor: the later icon-bleed fix cycle went straight from human bug report to implementer with no planner pass — not an authorized skip, though reasonable for a one-line diagnosed fix. |
+| Accessibility & Integration Quality | 3           | Native `<button>`/`<select>` are keyboard-operable end-to-end with no custom widget; `userRating` reads/writes/backfills/sorts through the same mechanism as sibling `watched`/`notes`/`tags` fields. No ARIA added where none was needed. Doesn't reach Exceeds — no accessibility edge case beyond the PRD's own ask was tackled (e.g. focus isn't moved into the `<select>` when it's keyboard-revealed).               |
+| Total                               | 10 / 12     | Pass threshold: **met** (all three ≥3, all binary acceptance criteria green).                                                                                                                                                                                                                                                                                                                                              |
+
+### Measurements:
+- Cycle time: 18:12
+- Review latency: 101min
+- Cost per run: $2.86 ( 2.03M in / 28.3k out)
+- Cost (including fixing icon issue):  $3.95 ( 2.99M in / 34.8k o
+ut)
+
+### Pass/Fail: **PASS** (10/12, all dimensions ≥3, all binary acceptance criteria met)
+
+### Observations
+
+#### What worked
+- Reused every existing convention: nullable field on the movie object (not a parallel array), `?? ''`/`?? []`-style backfill (extended with a deliberate `undefined`-vs-`null` distinction so already-unrated movies aren't miscounted as "backfilled"), delegated single-listener DOM wiring, native controls instead of a custom dropdown.
+- No CSS files touched in either run — the icon-bleed bug was fixed by moving FA classes onto a nested `<i>` and adjusting the click-delegation selector, not by editing `cards.css`.
+- Tester loop (stale fixture → fix → re-run → 166/166) is a clean, well-documented example of the orchestrator's branching logic actually firing.
+- `decision-008.md` records not just the final shape but the rejected first approach and why it was reversed — good traceability.
+
+#### What failed
+- Test coverage for the new logic (`compareByUserRating`, `handleUserRatingChange`/`handleRemoveUserRating`, the backfill branch) is still zero; both run-summary entries correctly flag this as a reminder rather than hiding it, but it's now been carried across two fix cycles without `test-writer`/`test-repair` actually running.
+- The icon-bleed follow-up fix skipped the planner role entirely (human-diagnosed bug straight to implementer) — a reasonable but ad hoc shortcut that CLAUDE.md's skip/loop rules don't actually define.
+
+#### Fixes proposed:
+- Actually run `test-writer`/`test-repair` for the still-open coverage gap rather than carrying the reminder forward again.
+- Add a "human-diagnosed trivial fix" branch to the orchestrator's skip/loop rules (skip planner only when the human supplies both root cause and fix location) so the next hot-fix cycle doesn't have to invent the shortcut.
+- Optional polish: call `.focus()` on the `<select>` when a keyboard activation reveals it, tightening the keyboard flow.
+
+#### Changes made:
+*pending*
