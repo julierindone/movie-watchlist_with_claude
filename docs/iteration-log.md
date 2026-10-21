@@ -1,6 +1,8 @@
 # Iteration Log
 
-## Run 1 | 2026-10-19
+**NOTE:** I executed these runs separate branches in order to have an easy comparison. I ended up merging the Run 001 branch into main because it implemented keyboard focus on my dropdowns, while Run 002 suggested making it as a change in the future, despite accessibility and keyboard access to interactive elements being specified in my prd.
+
+## Run 001 | 2026-10-19
 - **Agent/Tool used:** Orchestrator pipeline (`.claude/agents/orchestrator.md`) → planner → implementer (3 passes) → reviewer (3 passes) → tester, per CLAUDE.md's Orchestrator workflow.
 - **Task:** Build the user-rating feature (1–10 dropdown on watchlist cards) per `docs/prd.md`.
 
@@ -44,7 +46,7 @@
 
 ---
 
-## Run 2 | 2026-10-20
+## Run 002 | 2026-10-20
 
 ### Rubric Scores:
 | Dimension                           | Score (1-4) | Notes                                                                                                                                                                                                                                                                                                                                                                                                                      |
