@@ -1,3 +1,5 @@
+// TODO: Need to write tests
+
 import * as helpers from './src/helpers.js';
 import { searchMovies, handleImageError, handleMoreDetailsClick, handleLessDetailsClick } from './src/search.js';
 import {

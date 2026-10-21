@@ -33,3 +33,18 @@ describe('createMovieObject', () => {
 		expect(result.thumbnail).toBe('assets/images/film_icon.png');
 	});
 });
+
+describe('createMovieObject - tags/userRating defaults', () => {
+	it('defaults tags to an empty array and userRating to null for a normal call', () => {
+		const rawMovie = {
+			Title: 'Say Anything',
+			imdbID: 'tt0098258',
+			Poster: 'https://example.com/poster.jpg',
+		};
+
+		const result = createMovieObject(rawMovie, true);
+
+		expect(result.tags).toEqual([]);
+		expect(result.userRating).toBeNull();
+	});
+});

@@ -848,3 +848,89 @@ describe('handleRemoveTag', () => {
 		expect(result).toBeNull();
 	});
 });
+
+import { handleUserRatingChange } from './watchlist.js';
+
+describe('handleUserRatingChange', () => {
+	it('sets a new rating on the matching movie, persists it, and re-renders for a normal call', () => {
+		const movie = createFullMovie('tt0098258');
+		watchlistArray.push(movie);
+		const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+		handleUserRatingChange('tt0098258', '7');
+
+		expect(watchlistArray[0].userRating).toBe(7);
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify(watchlistArray));
+		expect(renderHtml).toHaveBeenCalled();
+		expect(consoleSpy).toHaveBeenCalled();
+		consoleSpy.mockRestore();
+	});
+
+	it('clears the rating to null when the "remove" sentinel value is submitted', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.userRating = 7;
+		watchlistArray.push(movie);
+
+		handleUserRatingChange('tt0098258', 'remove');
+
+		expect(watchlistArray[0].userRating).toBeNull();
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify(watchlistArray));
+		expect(renderHtml).toHaveBeenCalled();
+	});
+
+	it('clears the rating to null when the blank ("") sentinel value is submitted', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.userRating = 7;
+		watchlistArray.push(movie);
+
+		handleUserRatingChange('tt0098258', '');
+
+		expect(watchlistArray[0].userRating).toBeNull();
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlist', JSON.stringify(watchlistArray));
+		expect(renderHtml).toHaveBeenCalled();
+	});
+
+	it('shows the space-saver error state and does not persist when no watchlist item matches the imdbID (empty/no-match result)', () => {
+		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		const result = handleUserRatingChange('tt9999999', '7');
+
+		expect(getSpaceSaver).toHaveBeenCalledWith('error');
+		expect(consoleErrorSpy).toHaveBeenCalled();
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+		consoleErrorSpy.mockRestore();
+	});
+
+	it('skips the write silently when the submitted rating equals the already-stored rating', () => {
+		const movie = createFullMovie('tt0098258');
+		movie.userRating = 7;
+		watchlistArray.push(movie);
+
+		const result = handleUserRatingChange('tt0098258', '7');
+
+		expect(result).toBeNull();
+		expect(global.localStorage.setItem).not.toHaveBeenCalled();
+		expect(renderHtml).not.toHaveBeenCalled();
+	});
+});
+
+describe('handleSortChange (userRating)', () => {
+	function fakeMovie(imdbID, userRating) {
+		return { imdbID, title: imdbID, year: '2000', rating: '50%', genre: '', userRating };
+	}
+
+	it('sorts the watchlist by user rating, highest first, with unrated movies sorting last, for a "userRating" sort', () => {
+		watchlistArray.push(
+			fakeMovie('tt1', 5),
+			fakeMovie('tt2', null),
+			fakeMovie('tt3', 9)
+		);
+
+		handleSortChange('userRating');
+
+		expect(watchlistArray.map(m => m.imdbID)).toEqual(['tt3', 'tt1', 'tt2']);
+		expect(global.localStorage.setItem).toHaveBeenCalledWith('watchlistSort', 'userRating');
+		expect(renderHtml).toHaveBeenCalled();
+	});
+});

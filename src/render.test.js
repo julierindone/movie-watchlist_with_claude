@@ -347,3 +347,28 @@ describe('addDetailsToWatchlistItemError', () => {
 		expect(() => addDetailsToWatchlistItemError(undefined, true)).toThrow();
 	});
 });
+
+describe('generateWatchlistHtml - user rating markup', () => {
+	it('renders the regular-star toggle button with a "RATE" label and a 1-10 select with no remove-rating option for an unrated movie', () => {
+		watchlistArray.push(createFakeMovie({ userRating: null }));
+
+		generateWatchlistHtml();
+
+		expect(mainWrapper.innerHTML).toContain('user-rating-toggle');
+		expect(mainWrapper.innerHTML).toMatch(/<i class="fa-regular fa-star"><\/i>\s*RATE\s*<\/button>/);
+		expect(mainWrapper.innerHTML).toContain('rating-select');
+		expect(mainWrapper.innerHTML).toContain('<option value="1">1</option>');
+		expect(mainWrapper.innerHTML).toContain('<option value="10">10</option>');
+		expect(mainWrapper.innerHTML).not.toContain('remove rating');
+	});
+
+	it('renders a solid star with the rating number as the label, the matching selected option, and the remove-rating option for a rated movie', () => {
+		watchlistArray.push(createFakeMovie({ userRating: 7 }));
+
+		generateWatchlistHtml();
+
+		expect(mainWrapper.innerHTML).toMatch(/<i class="fa-solid fa-star"><\/i>\s*7\s*<\/button>/);
+		expect(mainWrapper.innerHTML).toContain('<option value="7" selected>7</option>');
+		expect(mainWrapper.innerHTML).toContain('remove rating');
+	});
+});
