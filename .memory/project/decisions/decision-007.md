@@ -3,6 +3,8 @@
 **Date:** 2026-09-29
 **Review by:** 2026-12-28
 **Status:** Active
+**Updated:** 2026-10-19 — resolved the test conflict noted below by updating
+the test's expected fixture rather than changing backfill behavior.
 
 **Decision:** `initLocalStorageWatchlist()` now backfills missing
 `notes`/`tags` fields onto legacy watchlist items via

@@ -15,6 +15,7 @@ import {
   handleRemoveTag,
   handleTagFilterChange,
   populateTagFilterOptions,
+  handleUserRatingChange,
   watchlistArray
 } from './src/watchlist.js';
 
@@ -47,7 +48,36 @@ if (document.getElementById('watchlist-page')) {
 /* ========== LISTENERS ========== */
 /* ====================================== */
 
+// Hides every open user-rating dropdown for which shouldStayOpen returns false.
+function hideOpenRatingSelects(shouldStayOpen) {
+  document.querySelectorAll('.rating-select').forEach((ratingSelect) => {
+    if (!ratingSelect.hidden && !shouldStayOpen(ratingSelect)) {
+      ratingSelect.hidden = true;
+    }
+  });
+}
+
+// Opens/closes the rating dropdown for one movie, closing any other open dropdown first.
+function handleUserRatingToggleClick(toggleButton) {
+  let movieImdbID = toggleButton.dataset.imdbId;
+  let ratingSelect = document.getElementById(`rating-select-${movieImdbID}`);
+  if (ratingSelect == null) {
+    console.error(`handleUserRatingToggleClick failed: no rating-select found for imdbID "${movieImdbID}".`);
+    return;
+  }
+
+  let wasOpen = !ratingSelect.hidden;
+  hideOpenRatingSelects((candidateSelect) => candidateSelect === ratingSelect);
+  ratingSelect.hidden = wasOpen;
+
+  if (!ratingSelect.hidden) {
+    ratingSelect.focus();
+  }
+}
+
 document.addEventListener('click', (event) => {
+  let userRatingToggle = event.target.closest('.user-rating-toggle');
+
   if (event.target.id === 'search-bar') {
     searchBarWrapper.classList.toggle('fancy-focus');
   }
@@ -55,6 +85,10 @@ document.addEventListener('click', (event) => {
   // NOT IN USE; WILL NEED WHEN LIMITING RESULTS TO 5.
   else if (event.target.id === 'more-results-btn') {
     // generateFuzzyResultsHtml();
+  }
+  // OPEN/CLOSE USER RATING DROPDOWN
+  else if (userRatingToggle) {
+    handleUserRatingToggleClick(userRatingToggle);
   }
   // ADD TO WATCHLIST
   // TODO: Use regex to simplify condition
@@ -84,9 +118,9 @@ document.addEventListener('click', (event) => {
   else if (event.target.classList.contains('less-details')) {
     handleLessDetailsClick(event.target);
   }
-  else {
-    return;
-  }
+
+  // CLOSE ANY OPEN USER RATING DROPDOWN NOT OWNED BY THIS CLICK (its own toggle is handled above)
+  hideOpenRatingSelects((candidateSelect) => candidateSelect.closest('.ratings').contains(event.target));
 });
 
 if (searchBar) {
@@ -125,6 +159,27 @@ if (tagFilterSelect) {
     handleTagFilterChange(tagFilterSelect.value);
   });
 }
+
+// SAVE USER RATING ON SELECT (delegated: rating-selects are rebuilt on every render)
+document.addEventListener('change', (event) => {
+  if (event.target.classList.contains('rating-select')) {
+    // Hide immediately; also covers the brief gap before renderHtml() rebuilds it hidden.
+    event.target.hidden = true;
+    handleUserRatingChange(event.target.dataset.imdbId, event.target.value);
+  }
+});
+
+// CLOSE RATING DROPDOWN ON BLUR (capturing: blur doesn't bubble), unless focus is moving
+// to this select's own toggle button — that click's own handler decides the outcome then.
+document.addEventListener('blur', (event) => {
+  if (event.target.classList.contains('rating-select')) {
+    let ownToggle = document.getElementById(`user-rating-${event.target.dataset.imdbId}`);
+    if (event.relatedTarget === ownToggle) {
+      return;
+    }
+    event.target.hidden = true;
+  }
+}, true);
 
 // ADD TAG ON ENTER (focus stays in the tag input; keydown bubbles unlike blur)
 document.addEventListener('keydown', (event) => {

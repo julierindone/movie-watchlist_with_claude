@@ -105,9 +105,10 @@ describe('initLocalStorageWatchlist', () => {
 
 		initLocalStorageWatchlist();
 
-		expect(watchlistArray).toEqual(
-			storedMovies.map(movie => ({ ...movie, notes: '', tags: [] }))
-		);
+		// Legacy fixture items lack notes/tags/userRating; initLocalStorageWatchlist
+		// backfills those fields (decision-007), so the expectation must include them.
+		const expectedWatchlist = storedMovies.map(movie => ({ ...movie, notes: '', tags: [], userRating: null }));
+		expect(watchlistArray).toEqual(expectedWatchlist);
 	});
 
 	it('initializes an empty watchlist in localStorage when none exists yet (first run / empty result)', () => {

@@ -12,7 +12,8 @@ export function createMovieObject(movie, watchlistStatus) {
 		watchlist: watchlistStatus,
 		watched: false,
 		notes: '',
-		tags: []
+		tags: [],
+		userRating: null
 	};
 }
 

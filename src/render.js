@@ -93,6 +93,7 @@ export function generateWatchlistHtml() {
 
 		filteredMovies.forEach(movie => {
 			let rating = generateRatingHtml(movie.rating, movie.imdbID);
+			let userRating = generateUserRatingHtml(movie);
 			let note = generateNoteHtml(movie);
 			let tags = generateTagsHtml(movie);
 			html +=
@@ -107,7 +108,10 @@ export function generateWatchlistHtml() {
 									<p>${movie.year}&emsp;${movie.runtime}</p>
 							</div>
 							<div class="watchlist-rating">
-								${rating}
+								<div class="ratings">
+									${rating}
+									${userRating}
+								</div>
 								<div>
 									<i class="fa-solid fa-circle-check" data-imdb-id="${movie.imdbID}"></i>
 									<i class="fa-${movie.watched ? 'solid' : 'regular'} fa-eye" data-imdb-id="${movie.imdbID}"></i>
@@ -147,6 +151,39 @@ function generateRatingHtml(rating, imdbID) {
 	else {
 		return '';
 	}
+}
+
+// Builds the user-rating toggle button and its hidden 1-10 + remove-rating select.
+function generateUserRatingHtml(movie) {
+	let isRated = movie.userRating != null;
+	let starIconClass = isRated ? 'fa-solid fa-star' : 'fa-regular fa-star';
+	let toggleLabel = isRated ? movie.userRating : 'RATE';
+	let optionsHtml = buildUserRatingOptionsHtml(movie.userRating);
+
+	return `
+		<button type="button" id="user-rating-${movie.imdbID}" class="user-rating-toggle" data-imdb-id="${movie.imdbID}">
+			<i class="${starIconClass}"></i>
+			${toggleLabel}
+		</button>
+		<select id="rating-select-${movie.imdbID}" class="rating-select" data-imdb-id="${movie.imdbID}" aria-label="Your rating for ${movie.title}" hidden>
+			${optionsHtml}
+		</select>`;
+}
+
+// Builds the blank default, 1-10, and conditional remove-rating <option> markup.
+function buildUserRatingOptionsHtml(userRating) {
+	let optionsHtml = '<option value=""></option>';
+
+	for (let ratingValue = 1; ratingValue <= 10; ratingValue++) {
+		let isSelected = userRating === ratingValue ? ' selected' : '';
+		optionsHtml += `<option value="${ratingValue}"${isSelected}>${ratingValue}</option>`;
+	}
+
+	if (userRating != null) {
+		optionsHtml += '<option value="remove">remove rating</option>';
+	}
+
+	return optionsHtml;
 }
 
 // Builds the note textarea markup, escaped to allow safe innerHTML use.
