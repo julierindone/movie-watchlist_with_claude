@@ -1,9 +1,10 @@
+<!-- NOTE TO GRADER: I'd added some updates to this since first submitting it for mod 1 l1 ex2, and also renamed it. It has been very hard to delineate which files are expected to be present in our repos on an ongoing basis, and whether they're there because they're a part of agentic engineering or just generated for our class. -->
+
 # Repo Structure Summary
 
 **Project:** `movie-watchlist_with_claude` — a client-side movie search & watchlist app
 built against the OMDb API, developed inside a containerized Claude Code setup.
 
-**TODO: NEEDS UPDATE**
 _Last updated: 2026-09-23_
 
 ## Stack
