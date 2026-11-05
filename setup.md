@@ -15,114 +15,139 @@
   - .env
   - .git
   - node_modules
-- Docker run command: `docker run -it --rm -v "${PWD}:/workspace" -v "claude-auth:/claude-auth" movie-watchlist-agent`
+- Docker run command: `docker run -it --rm --name movie-agent -v "${PWD}:/workspace" -v movie-watchlist-node_modules:/workspace/node_modules -v "claude-auth:/claude-auth" movie-watchlist-agent`
 - Mounted path: `/mnt/c/programming/automation/agentic_engineer/movie-watchlist_with_claude`
 - Mount flag: `-v "${PWD}:/workspace"`
+- `--name movie-agent`: names the container so it can be targeted by `docker network` commands from a second terminal while it's running (see Network mode below)
+- `-v movie-watchlist-node_modules:/workspace/node_modules`: a separate named volume mounted on top of the bind mount, so the container gets its own Linux-native `node_modules` instead of inheriting whatever got installed on my Windows/WSL host. Without this, native binary packages (e.g. Vite's `rolldown` dependency) resolve for the wrong platform and `npm test` fails inside the container. This volume persists across container restarts (`--rm` only removes the container, not named volumes), so `npm install` only needs to be re-run inside the container when a dependency actually changes.
 
 ## Network mode:
-My day-to-day container still runs without `--network none` (because Claude Code needs live internet to reach Anthropic's API), but I verified the blocking mechanism works, and a scoped allowlist is listed as future work.
+The container starts attached to Docker's default `bridge` network (no `--network` flag needed for that), but I immediately disconnect it before doing any work, and only reconnect it for the specific moments Claude Code needs to reach Anthropic's API. This is the same container used for the smoke test below — not a separate throwaway one.
 
 ### Network Egress Check
-`docker run --rm --network none movie-watchlist-agent bash -c "curl -v https://example.com --max-time 5"`
+From a second terminal, with the named container already running:
+`docker network disconnect bridge movie-agent`
 
-```bash
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Could not resolve host: example.com
+Back inside the container:
+`curl -v https://example.com --max-time 5`
+```
+* Could not resolve host: example.com
 * Closing connection 0
 curl: (6) Could not resolve host: example.com
 ```
+
+Reconnected from the second terminal only once Claude Code needed to actually run the smoke test below:
+`docker network connect bridge movie-agent`
 
 ## Smoke-testing  
 
 ### 1.  Host-side persistence check
 Prompt: Summarize the structure of this repo and write the summary to `/workspace/agent-summary.md`.
 
-```markdown      
+```markdown
 # Repo Structure Summary
 
 **Project:** `movie-watchlist_with_claude` — a client-side movie search & watchlist app built against the OMDb API.
 
 ## Stack
 - Vanilla JS (no framework), bundled/served with **Vite**
-- **Vitest** for testing
+- **Vitest** (+ `@vitest/coverage-v8`) for testing, with test files colocated next to their source (`fileName.test.js` beside `fileName.js`)
 - Plain CSS (no preprocessor), `vanilla-tilt` for card hover effects
-- Movie data from the OMDb API (key read from `VITE_OMDB_API_KEY` env var)
+- Movie data from the OMDb API (key read from `VITE_OMDB_API_KEY` env var in `.env`)
 
 ## Top-level layout
 - `index.html` — search page (entry point)
 - `watchlist.html` — saved watchlist page
-- `index.js` — app bootstrap; wires up DOM listeners (search submit, watchlist icon clicks, expand/collapse details, broken-image fallback) and initializes localStorage-backed watchlist
+- `index.js` — app bootstrap; wires up DOM listeners (search submit, watchlist/watched icon clicks, notes, tags, user-rating dropdowns, expand/collapse details, broken-image fallback) and initializes the localStorage-backed watchlist
 - `assets/` — CSS (`style.css`, `cards.css`, `reset.css`, bundled `all.css`), JS bundle (`all.js`), images, webfonts, and the `vanilla-tilt` library
-- `Dockerfile`, `dockerfile_orig`, `docker-entrypoint.sh` — containerized dev/run setup
-- `settings.json`, `statusline.sh` — Claude Code project config (status line script)
+- `Dockerfile`, `docker-entrypoint.sh` — containerized dev/run setup
+- `settings.json`, `statusline.sh` — Claude Code status line config
 - `.env` / `.env.example` — OMDb API key config
-- `package.json` — `dev` (vite) and `test` (vitest) scripts; deps: `vite`, `vanilla-tilt`; devDep: `vitest`
+- `package.json` — `dev` (vite) and `test` (vitest) scripts; deps: `vite`, `vanilla-tilt`; devDeps: `vitest`, `@vitest/coverage-v8`
+- `scripts/session-cost.mjs` — standalone script, unrelated to the app runtime
+- `coverage/` — generated Vitest coverage report output
 
 ## `src/` modules
 - **`fetch.js`** — talks to the OMDb API: `fetchExact` (by title), `fetchFuzzy` (search), `fetchFromImdbId` (by IMDb ID), plus `toMovieArray` to normalize single vs. list responses
-- **`normalize.js`** — `createMovieObject` maps raw OMDb fields into the app's internal movie shape (title, rating, runtime, thumbnail fallback, etc.); has a companion test file `normalize.test.js`
-- **`search.js`** — drives the search page: runs searches, renders results, handles "more/less details" expansion and broken thumbnail images
-- **`watchlist.js`** — manages the watchlist stored in `localStorage`: init, add/remove via icon click, and the in-memory `watchlistArray`
-- **`render.js`** — builds HTML strings/DOM for movie cards, watchlist items, and error states (no-match, fetch failure, etc.)
-- **`helpers.js`** — shared UI utilities: `resetAll`, `getSpaceSaver` (empty/error state messaging), `toggleMainSection`
+- **`normalize.js`** — `createMovieObject` maps raw OMDb fields into the app's internal movie shape (title, rating, runtime, thumbnail fallback, etc.)
+- **`search.js`** — drives the search page: search type selection, broken-thumbnail handling
+- **`watchlist.js`** — the largest module; owns all localStorage-backed state: add/remove, watched-status toggle, notes, tags (add/remove + tag filter), user rating (1–10, sortable), sort preference, genre/watched/tag filters, and legacy-item field backfill
+- **`render.js`** — builds HTML strings/DOM for search results, watchlist cards, ratings, user-rating dropdown, notes, tag chips, and error/empty states
+- **`helpers.js`** — shared utilities: `resetAll`, `getSpaceSaver` (empty/error messaging), `escapeHtml` (sanitizes user-typed text before `innerHTML` use), `getStoredPreference`/`setStoredPreference`, `toggleMainSection`
+
+Every `src/` file except `search.js` has a matching `*.test.js` file.
 
 ## Flow
 1. `index.js` initializes the watchlist from localStorage and sets up event listeners.
-2. On the search page, submitting the search form calls `search.js`, which uses `fetch.js` to query OMDb, `normalize.js` to shape the data, and `render.js` to display cards.
-3. Clicking a card's watchlist icon calls into `watchlist.js`, which persists the change to `localStorage`.
-4. The watchlist page (`watchlist.html`) reads `watchlistArray` and renders it via `render.js`, or shows an empty-state message via `helpers.js` if nothing is saved.
+2. On the search page, submitting the search form uses `fetch.js` to query OMDb, `normalize.js` to shape the data, and `render.js` to display cards.
+3. Clicking a card's watchlist/watched icon, editing a note, adding/removing a tag, or setting a user rating all route through `watchlist.js`, which persists the change to `localStorage`.
+4. `watchlist.html` reads the (optionally sorted/filtered) watchlist array and renders it via `render.js`, or shows an empty-state message via `helpers.js` if nothing is saved.
+
+## Claude Code / agent configuration (`.claude/`)
+- `agents/` — subagent definitions: `orchestrator`, `planner`, `implementer`, `reviewer`, `tester`, `researcher`, `feature-builder`, `test-writer`, `test-repair`
+- `skills/` — `find-untested-functions`, `log-decision`
+- `settings.json` / `settings.local.json` — permissions and tool config
+
+## Project memory (`.memory/`)
+- `SCOPE.md` — declares this directory belongs to `julierindone/movie-watchlist_with_claude`, verified against the git remote
+- `project/` — read/write working memory: `MEMORY_INDEX.md` (index), `current-state.md` (shipped/deferred features, open questions), `decisions/decision-00N.md` (8 recorded decisions, e.g. boolean watched field, colocated tests, notes field, tag filtering, user-rating UI)
+- `knowledge/` — read-only, human-maintained: `coding-standards.md`, `project-conventions.md`
+- `reference/` — read-only pointers, indexed via `REFERENCE_INDEX.md`
+
+## `docs/`
+- `prd.md` — product requirements
+- `memory-architecture.md`, `memory-directory-permissions.md` — design docs for the `.memory/` system
+- `iteration-log.md`, `course-text-errata.md`, `feature-builder-quality-rubric.md`, `orchestration-diagram.md`/`.png`, `routing-and-tool-grant-map.md`/`.json` — process/course documentation
+- `_Notes-context-for-claude-helping-with-class-assignments/`, `_Notes-failed-exercise-bullshit/`, `older_docs/` — course-assignment working notes and archives
 ```
 #### Confirmed on host after container exit:
-`ls -la agent-summary.md`  
-output: `-rwxrwxrwx 1 node node 2650 Nov  4 23:35 agent-summary.md`
+`ls -la agent-summary.md`
+output: `-rwxrwxrwx 1 node node 4696 Nov  5 20:15 agent-summary.md`
 
-### 2. Prompt: Run the test command and summarize its findings.  
+### 2. Prompt: Run the test command and summarize its findings.
 
-    ● I'll check the repo structure to find how tests are configured, then run them.
-    ● Bash(ls -la /workspace | head -50)
-      ⎿  total 92
-        drwxrwxrwx 1 node node   512 Aug  5 00:18 .
-        drwxr-xr-x 1 root root  4096 Aug  5 00:07 ..
-        drwxrwxrwx 1 node node   512 Aug  5 00:00 .claude
-        -rwxrwxrwx 1 node node    26 Aug  2 22:06 .env
-        -rwxrwxrwx 1 node node    31 Aug  2 22:08 .env.example
-        drwxrwxrwx 1 node node   512 Aug  3 21:17 .git
-        -rwxrwxrwx 1 node node    32 Aug  3 21:16 .gitignore
-        -rwxrwxrwx 1 node node  1340 Aug  4 22:38 Dockerfile
-        -rwxrwxrwx 1 node node  2650 Aug  4 23:59 agent-summary.md
-        drwxrwxrwx 1 node node   512 Jul 30 20:40 assets
-        -rwxrwxrwx 1 node node  1406 Aug  4 22:42 docker-entrypoint.sh
-        -rwxrwxrwx 1 node node  2110 Jul 30 20:40 index.html
-        -rwxrwxrwx 1 node node  2258 Jul 30 22:42 index.js
-        drwxrwxrwx 1 node node   512 Aug  4 23:04 node_modules
-        -rwxrwxrwx 1 node node 42793 Aug  4 23:04 package-lock.json
-        -rwxrwxrwx 1 node node   710 Jul 30 22:59 package.json
-        -rwxrwxrwx 1 node node   124 Aug  4 00:13 settings.json
-        -rwxrwxrwx 1 node node  4313 Aug  5 00:32 setup.md
-        drwxrwxrwx 1 node node   512 Aug  5 00:18 src
-        -rwxrwxrwx 1 node node  5456 Aug  4 00:13 statusline.sh
-        -rwxrwxrwx 1 node node  1448 Jul 30 20:40 watchlist.html
+Re-run today (Nov 5) in the same named container used for the network check, after fixing a Windows/Linux native-binary platform mismatch by adding the `movie-watchlist-node_modules` volume (see Commands/paths above) and running `npm install` once inside the container:
 
-    ● Read(/workspace/package.json)
-      ⎿  Read 30 lines
+```
+> movie-watchlist_with_claude@1.0.0 test
+> vitest run
 
-                                                                            12:32 AM claude-sonnet-5
-    ● The test command is npm test (vitest run). Running it now.
 
-    ● Bash(npm test 2>&1)
-      ⎿  > movie-watchlist_with_claude@1.0.0 test
-        > vitest run
+ RUN  v5.0.1 /workspace
 
-          RUN  v4.1.10 /workspace
+ ✓ src/normalize.test.js (3 tests) 8ms
+ ✓ src/fetch.test.js (18 tests) 17ms
+ ✓ src/helpers.test.js (20 tests) 20ms
+ ✓ src/render.test.js (30 tests) 19ms
+ ✓ src/search.test.js (16 tests) 150ms
+stdout | src/watchlist.test.js > initLocalStorageWatchlist > loads an existing, valid watchlist from localStorage into watchlistArray for a normal startup
+Backfilled notes/tags/userRating on 2 legacy watchlist item(s) at 2026-11-05T20:43:57.987Z.
 
-          Test Files  1 passed (1)
-              Tests  2 passed (2)
-            Start at  00:32:51
-            Duration  4.35s (transform 115ms, setup 0ms, import 448ms, tests 3ms, environment 0ms)
+stderr | src/watchlist.test.js > handleAddTag > shows the space-saver error state and does not persist when no watchlist item matches the imdbID
+handleAddTag failed: no watchlist item found for imdbID "tt9999999".
 
-                                                                            12:32 AM claude-sonnet-5
-    ● All tests pass: npm test (vitest run) found 1 test file with 2 tests, both passing, in 4.35s.
+stderr | src/watchlist.test.js > handleRemoveTag > shows the space-saver error state and does not persist when no watchlist item matches the imdbID
+handleRemoveTag failed: no watchlist item found for imdbID "tt9999999".
+
+stderr | src/watchlist.test.js > handleRemoveTag > shows the space-saver error state without throwing for invalid input (missing imdbID and tag entirely)
+handleRemoveTag failed: no watchlist item found for imdbID "undefined".
+
+stdout | src/watchlist.test.js > handleUserRatingChange > clears the rating to null when the "remove" sentinel value is submitted
+User rating updated to "null" for imdbID "tt0098258" at 2026-11-05T20:43:58.021Z.
+
+stdout | src/watchlist.test.js > handleUserRatingChange > clears the rating to null when the blank ("") sentinel value is submitted
+User rating updated to "null" for imdbID "tt0098258" at 2026-11-05T20:43:58.022Z.
+
+ ✓ src/watchlist.test.js (88 tests) 43ms
+
+ Test Files  6 passed (6)
+      Tests  175 passed (175)
+   Start at  20:43:57
+   Duration  764ms (transform 58%, import 30%, tests 10%, worker 2%)
+```
+
+All tests pass: 6 test files, 175 tests, 0 failures. The `stderr` lines are expected console output from negative-path tests (confirming the app logs and bails out cleanly when an item isn't found), not test failures.
+
 
 ### 3.  Filesystem containment check
 Before exiting, inside the container, I ran `ls /mnt/c/Users`.  
@@ -140,7 +165,10 @@ The agent only needs this codebase to do its job. Explicitly excluded: my SSH ke
 Nothing beyond the container's own default filesystem layer. Because the container runs with `--rm`, anything written outside `/workspace` and the `claude-auth` volume — temp files, caches, OS state — is destroyed the moment the container exits. If I add caching or generate temp files later, those would go in `/tmp` for the same reason: it's container-only and disappears with the container.
 
 ### What did you choose to persist?
-My source code, .env, package.json, and node_modules persist in /workspace. 
+My source code, .env, and package.json persist in /workspace via the bind mount. node_modules persists separately, in its own named volume (movie-watchlist-node_modules) — see the next question for why.
+
+### What is the movie-watchlist-node_modules volume and why is it separate from /workspace?
+It's a named Docker volume mounted on top of the project bind mount at /workspace/node_modules, so the container gets its own Linux-native node_modules instead of inheriting whatever got installed on my Windows/WSL host. Without it, native binary packages (e.g. Vite's rolldown dependency) resolve for the wrong platform and npm test fails inside the container with a "cannot find native binding" error. Like claude-auth, it survives --rm because named volumes aren't removed with the container, so npm install only needs to be re-run when a dependency actually changes.
 
 ### What dependencies did you include in your extended Docker image?
 #### Build-time:
@@ -150,7 +178,7 @@ My source code, .env, package.json, and node_modules persist in /workspace.
   - NOTE: Only Claude Code is installed since it's the only agent tool I'm actually using for this project.
 - Claude Code config files (settings.json, statusline.sh) and the entrypoint script
 	
-#### Installed with *npm install* at container runtime:
+#### Installed with *npm install* inside the movie-watchlist-node_modules volume (not baked into the image, since the bind mount would overwrite it anyway):
 - vite
 - vitest
 - vanilla-tilt
@@ -165,7 +193,7 @@ My source code, .env, package.json, and node_modules persist in /workspace.
 ### What risks remain?
 1. My API key is still visible to the agent inside my `.env` file.
 2. The agent has full read/write access to everything in my repo, so if it deleted or overwrote something, the damage would exist on my host, too.
-3. The agent has more outbound internet access than it needs - I need to restrict egress.
+3. Egress is now blocked by default and only connected when Claude Code needs it, but it's a blunt on/off switch, not a scoped allowlist — once connected, the agent can reach anywhere, not just Anthropic's API. A real allowlist (only Anthropic, npm, and OMDb reachable) is still future work.
 4. `claude-auth` isn't encrypted, so other containers could use my stored login.
 5. I could do a poor job at reviewing code written by claude.
 6. `npm install` could install a dependency's dependency that is harmful.
