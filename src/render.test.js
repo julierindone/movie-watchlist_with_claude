@@ -359,7 +359,7 @@ describe('generateWatchlistHtml - user rating markup', () => {
 		expect(mainWrapper.innerHTML).toContain('rating-select');
 		expect(mainWrapper.innerHTML).toContain('<option value="1">1</option>');
 		expect(mainWrapper.innerHTML).toContain('<option value="10">10</option>');
-		expect(mainWrapper.innerHTML).not.toContain('remove rating');
+		expect(mainWrapper.innerHTML).not.toContain('remove');
 	});
 
 	it('renders a solid star with the rating number as the label, the matching selected option, and the remove-rating option for a rated movie', () => {
@@ -369,6 +369,6 @@ describe('generateWatchlistHtml - user rating markup', () => {
 
 		expect(mainWrapper.innerHTML).toMatch(/<i class="fa-solid fa-star"><\/i>\s*7\s*<\/button>/);
 		expect(mainWrapper.innerHTML).toContain('<option value="7" selected>7</option>');
-		expect(mainWrapper.innerHTML).toContain('remove rating');
+		expect(mainWrapper.innerHTML).toContain('remove');
 	});
 });

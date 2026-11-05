@@ -180,7 +180,7 @@ function buildUserRatingOptionsHtml(userRating) {
 	}
 
 	if (userRating != null) {
-		optionsHtml += '<option value="remove">remove rating</option>';
+		optionsHtml += '<option value="remove">remove</option>';
 	}
 
 	return optionsHtml;
