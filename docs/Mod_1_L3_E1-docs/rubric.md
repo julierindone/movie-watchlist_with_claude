@@ -2,14 +2,16 @@
 
 ## 1.1 Dimensions
 
-### 1.1.1 Coverage Reporting Accuracy
+### 1.1.1 Coverage Reporting Accuracy (maps to PRD Acceptance Criterion #1)
 Measures whether the agent's reported coverage percentage matches the actual output of the coverage tool. A high score requires the reported numbers to be real and traceable to the tool's output, not estimated or approximated.
 
-### 1.1.2 File Selection Quality
+### 1.1.2 File Selection Quality (maps to the file-selection half of PRD Acceptance Criterion #2)
 Measures whether the file chosen as "most in need of coverage" is genuinely the strongest candidate, based on risk factors like complexity, criticality, external dependencies, or how frequently the file is relied on by others.
 
-### 1.1.3 Justification Specificity
+### 1.1.3 Justification Consistency (maps to the justification half of PRD Acceptance Criterion #2)
 Measures how well the agent explains why the selected file needs coverage. A high score requires the justification to reference specific, concrete evidence from the file itself, not generic or vague reasoning.
+
+PRD Acceptance Criterion #3 (no test or source file modification) is enforced as a binary pass/fail check rather than a scored dimension — see "Alternatives Considered" below.
 
 ---
 ## Alternatives Considered
@@ -53,8 +55,7 @@ Considered adding a separate "Scope Compliance" dimension for whether the agent 
 
 ## Pass Threshold
 A run passes if it scores 3 or higher on all three dimensions.
-
-**Reasoning:** Coverage Reporting Accuracy must be reliable, since a fabricated number is worse than no number at all. File Selection Quality and Justification Specificity both need to clear a baseline of "genuinely useful" for this analysis to save a developer real time — a technically accurate but poorly justified pick isn't actionable.
+**Reasoning:** Coverage Reporting Accuracy must be reliable, since a fabricated number is worse than no number at all. File Selection Quality and Justification Consistency both need to clear a baseline of "genuinely useful" for this analysis to save a developer real time — a technically accurate but poorly justified pick isn't actionable.
 
 ## Notes on Threshold Design
 Considered an aggregate minimum (e.g., 8/12) instead of a dimension floor. Ruled out because it would let a fabricated coverage number (1 on Coverage Reporting Accuracy) pass if the other two dimensions scored high — an inaccurate percentage undermines the entire report regardless of how well-justified the file selection is.

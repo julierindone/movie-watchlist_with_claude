@@ -25,6 +25,6 @@ Estimate current test coverage for this project.
 7. Report the overall coverage percentage and the selected file with its justification.
 
 ## Acceptance Criteria
-The agent reports an overall coverage percentage that matches the actual output of the coverage tool (not an estimate or approximation).
-- The agent selects exactly one file and provides a justification that references a specific, concrete factor (e.g., complexity, criticality, external dependencies) rather than a vague statement.
-- The agent does not write or modify any test or source files.
+1. The agent reports an overall coverage percentage that matches the actual output of the coverage tool (not an estimate or approximation).
+2. The agent selects exactly one file and provides a justification that references a specific, concrete factor (e.g., complexity, criticality, external dependencies) rather than a vague statement.
+3. The agent does not write or modify any test or source files.

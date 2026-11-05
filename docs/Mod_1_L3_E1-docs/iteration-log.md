@@ -13,10 +13,10 @@
 ### Rubric Scores:
 | Dimension                   | Score (1-4) | Notes                                                                                                                            |
 | --------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Coverage Reporting Accuracy | 4           |                                                                                                                                  |
+| Coverage Reporting Accuracy | 3           | Reported percentages (34.73% stmts / 57.44% branch / 51.72% funcs / 31.03% lines, per output_001.md) exactly match the vitest --coverage output. This meets the rubric's level-3 bar ("accurately reports the percentages it produced"), but the agent added no interpretive context beyond the raw numbers (e.g., which metric is weakest and what that implies) — the level-4 bar this run doesn't clear. |
 | File Selection Quality      | 4           | Picked a file with high importance that has real flaws                                                                           |
 | Justification Consistency   | 4           | Brought up already-identified weaknesses (that would've been caught by tests) and explained potential consequences if not fixed. |
-| Total                       | 12 / 12     | Pass threshold: 3 on each                                                                                                        |
+| Total                       | 11 / 12     | Pass threshold: 3 on each — still a pass                                                                                        |
 
 ### Measurements:
 - Cycle time: 18:24
@@ -46,7 +46,7 @@ None - Baseline
 ### Rubric Scores:
 | Dimension                   | Score (1-4) | Notes                                       |
 | --------------------------- | ----------- | ------------------------------------------- |
-| Coverage Reporting Accuracy | 4           | Numbers matched                             |
+| Coverage Reporting Accuracy | 4           | Percentages matched the tool's output exactly (same figures as Run 001), and the agent added the interpretive context Run 001 lacked: it flagged that src/render.js and src/search.js are never imported by either test file, so v8 doesn't instrument them at all, meaning the 34.73% headline figure overstates real coverage of the src/ directory. That concrete "what this implies" finding, not just a restated percentage, is what clears the level-4 bar here. |
 | File Selection Quality      | 4           | Gave 4 legit reasons why it outranks others |
 | Justification Consistency   | 4           | Multiple specific examples                  |
 | Total                       | 12          | Pass threshold: 3 on each                   |
@@ -70,38 +70,3 @@ Honestly, nothing.
 #### Changes made:
 Asked it to create an output markdown file.
 
-
-<!-- TEMPLATE -->
-<!-- 
-## Run {number} | {date} {| If Baseline, "Baseline"}
-- **Task:** {One-sentence description}
-- **Full prompt:** {Exact task prompt}
-- **Agent/Tool used:** {Agent/Tool}
-
-### Rubric Scores:
-| Dimension                   | Score (1-4) | Notes                       |
-| --------------------------- | ----------- | --------------------------- |
-| Coverage Reporting Accuracy | {Score}     | {Observation}               |
-| File Selection Quality      | {Score}     | {Observation}               |
-| Justification Consistency   | {Score}     | {Observation}               |
-| Total                       | {X / Y}     | Pass threshold: {threshold} |
-
-### Measurements:
-- Cycle time: {X min Y sec}
-- Review latency: {X min}
-- Cost per run: ${X.XX} ({token input} in / {token output} out)
-
-### Pass/Fail: {Pass / Fail}
-
-### Observations
-
-#### What worked
-{1-2 sentences about what worked} 
-
-#### What failed
-{1-2 sentences about what failed}
-
-#### Changes made:
-{what changed since last run}
-
- -->
