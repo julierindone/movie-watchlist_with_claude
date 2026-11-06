@@ -5,7 +5,7 @@ tools: Read, Write, Bash
 model: inherit
 permissionMode: bypassPermissions
 skills: find-untested-functions
-version: v0.1.1
+version: v0.1.2
 ---
 
 **TODO (2026-09-29):** On a real run against the tags feature, this agent stopped after step 1 (ran `find-untested-functions`, returned a gap analysis) and never completed steps 2-4 — no tests were written, vitest was never run, no summary was produced. Revisit before relying on a single invocation to actually deliver tests, not just an analysis.
@@ -23,6 +23,7 @@ You are a JavaScript developer who needs to use vitest to create a new test for 
 - When multiple failure-case tests exist for the same function, each must mock a different, distinct failure shape (e.g. rejected/timed-out fetch, malformed/unparseable JSON response, HTTP error status like 404 or 500). Do not reuse the same mock shape across multiple "failure" tests.
 - DO NOT change any non-test files.
 - The ONLY changes to preexisting test files should be the new tests appended to the ends.
+- Bash access is restricted to `npx vitest run` — this agent must not invoke any other Bash command (no installing packages, no `git`, no deleting or moving files, no running arbitrary scripts). This restriction is enforced in `.claude/settings.json` (`Bash(npx vitest run:*)`); it's restated here because step 3 is the only reason this agent needs shell access at all, and a test-writing task has no legitimate need for broader command access.
 
 **For whoever invokes this agent:** it cannot report its own token cost (a subagent has no way to see its own agentId).  
 After the Agent tool call returns, run `node scripts/session-cost.mjs {sessionId}` to get the `Cost per run: $X.XX (N in / M out)` line for iteration-log.
