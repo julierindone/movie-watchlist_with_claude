@@ -78,6 +78,25 @@ To verify, restart Claude Code, then ask the agent to write to the directory. Ex
 call to be refused by the permission system, naming the deny rule. `claude doctor` shows the
 resolved settings if a rule appears not to load.
 
+**Independently re-verified (2026-11-06), in a different environment than the one above:**
+`chmod 555` on `.memory/knowledge/` and `chmod 444` on its files were (re-)applied for
+consistency between `coding-standards.md` and `project-conventions.md` (the latter had drifted
+to `777`). As expected, the directory itself still reported fully open (`drwxrwxrwx`) after the
+chmod — the mount ignores directory mode bits, confirming reason 2 above independent of the
+original test. A direct write attempt was then made as root:
+
+```
+$ echo "probe-write-..." >> .memory/knowledge/project-conventions.md
+Permission to use Bash with command echo "..." >> .memory/knowledge/project-conventions.md has been denied.
+```
+
+The write was refused by the permission system before it reached the filesystem — the shell
+redirect was caught by the `Edit()` deny rule, exactly as documented in "Known gaps" below. This
+is independent confirmation that the rule travels with the repo via `.claude/settings.json` and
+holds in an environment other than the one it was originally written and tested in, which is the
+actual claim this document makes about why a harness-level rule is the right mechanism for an
+agent (version-controlled, environment-independent) where filesystem permissions are not.
+
 ## Known gaps
 
 - **`Write(path)` and `NotebookEdit(path)` rules are inert.** Claude Code checks file

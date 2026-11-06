@@ -7,7 +7,7 @@ Rewritten in place, not appended to — see `docs/memory-architecture.md` for wh
 
 - Sort (title/date/rating) and genre filter — Lesson 2
 - Watched-status: `watched` boolean field, eye icon on watchlist cards, persists in localStorage — Lesson 3 Activation Exercise
-- Watched-status filter dropdown on the watchlist page (`watchlist.html:48`, `src/watchlist.js:217`) — commit `fcc3eca`
+- Watched-status filter dropdown on the watchlist page (`watchlist.html:50`, `src/watchlist.js:341-373`) — commit `fcc3eca`. (Line numbers corrected 2026-11-06 after a fresh-session check found they'd drifted as the file grew with later features — see iteration log Run 003.)
 - User rating: `userRating` field (integer 1-10 or `null`) on the movie object, set/cleared via a native `<select>` toggled open by a `#user-rating-{imdbID}` button on watchlist cards only, sortable via the "User Rating" option (unrated last). See `decisions/decision-008.md` for the open/close mechanism.
 
 ## Deliberately absent, not a gap

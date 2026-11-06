@@ -121,7 +121,7 @@ None of these expire on a schedule. They change when a human decides they have c
 - Per-session observations
 - A chronological log of everything that happened
 
-**Current contents:** `MEMORY_INDEX.md`, `decisions/decision-001.md`, `decisions/decision-002.md`. The state entry above does not exist yet — the main gap this revision opens for Step 2.
+**Current contents:** `MEMORY_INDEX.md`, `current-state.md`, and `decisions/decision-001.md` through `decision-008.md` (eight entries, covering watched-status-as-field, colocated tests, free-text notes, note-persistence timing, HTML-escaping, tag filtering, legacy-data backfill, and the user-rating dropdown mechanism — see `MEMORY_INDEX.md` for the full list with dates and review windows).
 
 ---
 
@@ -173,7 +173,7 @@ None of these expire on a schedule. They change when a human decides they have c
 - Procedures → skills
 - Aspirational rules nobody intends to enforce — they only teach the agent that this file is advisory
 
-**Current contents:** `coding-standards.md`. The architectural conventions, the CSS-consent rule, and the test-writer rule are specified above but not yet filed; adding them requires a human copy step by design.
+**Current contents:** `coding-standards.md` and `project-conventions.md` (the architectural conventions, CSS-consent rule, and test-writer rule described above are filed in the latter — both were drafted by the agent to scratch space and copied into place by a human, per the write-permission policy below).
 
 ---
 

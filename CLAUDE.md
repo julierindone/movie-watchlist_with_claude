@@ -26,6 +26,17 @@ duplicates.
   first; open only the document(s) whose index entry matches the current
   task. Do not read the directory itself.
 
+### If a write to .memory/knowledge/ or .memory/reference/ is denied
+
+If a write attempt to either read-only layer is refused by the permission
+system (or you encounter any other sign the directory is protected), stop
+immediately — do not retry, do not attempt a different tool or path to
+work around it, and do not change file or directory permissions to make
+the write succeed. Report the restriction to the human plainly (which file,
+what you were trying to write) and, if you have content that genuinely
+belongs there, draft it to scratch space instead and ask the human to copy
+it into place.
+
 ### Write policy
 
 Before writing any content to a memory file, classify it:

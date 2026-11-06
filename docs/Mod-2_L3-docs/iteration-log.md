@@ -54,3 +54,34 @@ none
 
 #### Changes made:
 none.
+
+## Memory System Build | 2026-11-06 | Independent fresh-session re-verification (003)
+
+- **Agent/Tool used:** A separate, context-isolated agent (general-purpose, Claude Sonnet 5) launched specifically to repeat Step 5 with zero conversation history of any kind — not the same session that built or previously tested the memory system, and not `--continue`/`--resume` off any prior session.
+- **Memory system state for this run:** Genuinely fresh in the strongest sense available: the agent had no prior turns in this conversation to draw on at all (not just a restarted CLI session), and this environment's own Claude-Code auto-memory file (`~/.claude/projects/.../memory/MEMORY.md`) was confirmed empty beforehand — directly addressing the confound filed as errata during the earlier Activation Exercise (auto-memory silently surviving a "fresh" session regardless of `--continue`/`--resume`). Memory contents were not pasted into its prompt; it was told only to investigate the repo itself.
+- **Task:** Startup-Memory Check + Task-Resumption Check, exactly as specified in Step 5.3.
+
+### Rubric Scores:
+| Dimension      | Score (1-4) | Notes                                                                                                                                                                                             |
+| -------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accuracy       | 4           | Verified `current-state.md`'s claims directly against code (eye icon present only in `generateWatchlistHtml`, not the search-result renderers; watched-filter code genuinely exists) rather than just repeating the file's claims. Caught and reported two real, minor drift issues on its own: `current-state.md`'s cited line numbers (`watchlist.js:217`, `watchlist.html:48`) had gone stale as the file grew with later features (tags, user rating), and `MEMORY_INDEX.md`'s header date trailed its own listed content. |
+| Task Adherence | 4           | Never attempted or implied a write to `.memory/knowledge/`. Explicitly declined to re-litigate decision-001 (boolean-vs-array) or decision-008 (dropdown open/close mechanism, already resolved by manual testing), and explicitly declined to treat the absent search-result eye icon as a bug, citing the open question in `current-state.md` that blocks it. |
+| Coherence      | 4           | Proposed next action (finish the uncommitted CSS/render cleanup — remove leftover debug borders, confirm the new `rotten-tomatoes` class is intentional, run tests, then commit) was grounded in both the repo's real uncommitted diff and `project-conventions.md`'s CSS-consent rule and "remind, don't chain `test-writer`" rule — not a hallucinated task and not a restatement of memory content. |
+| Total          | 12 / 12     | Pass threshold: 3 on all                                                                                                                                                                           |
+
+### Pass/Fail: Pass
+
+### Observations
+
+#### What worked
+Confirmed, independently of the original build session, that the real enforcement mechanism (not filesystem chmod) is what a fresh agent actually respects in practice — it never attempted a knowledge-layer write. Also demonstrated the value of a genuinely fresh (not just restarted) session: it caught stale line-number citations the original builder hadn't noticed drifting.
+
+#### What failed
+Nothing — this run surfaced the citation-drift issue as a minor finding, not a failure of the memory system itself.
+
+#### Fixes proposed:
+Correct the stale line-number citations in `current-state.md` and the stale header date in `MEMORY_INDEX.md`.
+
+#### Changes made:
+- Fix 1 (corrected stale line citations): `current-state.md` updated to `watchlist.html:50`, `src/watchlist.js:341-373`.
+- Fix 2 (corrected stale index header date): `MEMORY_INDEX.md` header updated from `2026-09-29` to `2026-10-19` to match its own listed content.
