@@ -47,4 +47,11 @@ The technique plan only placed proactive summaries at the planned phase boundary
 Will eventually need to be refactored to accommodate database storage instead of local, but I haven't added that yet.
 
 #### Changes made:
-- Fix 1 (watchlist.hrml permission): 54993fb — agent: feature-builder v0.1.1
+- Fix 1 (watchlist.html permission): 54993fb — agent: feature-builder v0.1.1
+
+### Relevant commit SHAs (full run)
+- `b9a2e04` (9/17, 13:33) — pre-session plan committed
+- `4e6b4ef` (9/17, 17:24) — Phase 1: sort feature (title, date, rating)
+- `be86f3d` (9/17, 18:17) — Phase 2: genre filter + persistence fix for sort
+- `54993fb` (9/19, 12:30) — agent v0.1.1: watchlist.html added to allowed files (the fix cited above)
+- `49b4acb` (9/19, 12:39) — this iteration log and related artifacts committed
