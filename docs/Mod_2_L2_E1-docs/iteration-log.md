@@ -21,6 +21,9 @@ end time: Thu Sep 17 01:11:24 UTC 2026 (6:17)
 
 ### Pass/Fail: Pass
 
+### Compaction
+Not used. By session end, context usage was at 9% — nowhere close to any compaction threshold for a two-phase, single-small-codebase task — so compaction was never triggered and wasn't manually invoked either.
+
 ### Observations
 
 #### What worked
@@ -37,8 +40,11 @@ The code it wrote was trim, easy to read, and wrote comments that adhered to len
 #### What failed
 Nothing. Anything it was unsure about, it asked.
 
-#### Fixes proposed:
-No fixes, but will eventually need to be refactored to accommodate database storage instead of local, but I haven't added that yet.
+#### Context-management choice to change next time:
+The technique plan only placed proactive summaries at the planned phase boundary (end of Phase 1) and session end — it didn't account for a requirement correction arriving *mid-phase* instead of at a planned boundary. That's exactly what happened in Phase 2: the genre-filter location (search-results page vs. watchlist page) turned out to be wrong partway through, once the agent pointed out OMDb's search endpoint doesn't return genre data at all. Next time, I'd add a proactive-summary checkpoint immediately after any mid-phase scope/requirement correction, not only at the phases I planned in advance — real requirement changes don't reliably show up exactly where you scheduled them.
+
+#### Fixes proposed (product-level, not a context-management change):
+Will eventually need to be refactored to accommodate database storage instead of local, but I haven't added that yet.
 
 #### Changes made:
 - Fix 1 (watchlist.hrml permission): 54993fb — agent: feature-builder v0.1.1
