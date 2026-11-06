@@ -13,15 +13,17 @@
 | Total                       | 12 / 12     | Pass threshold: 3 on each                                                                   |
 
 ### Measurements:
-- Cycle time: ~21 min (for both agents' work)
-- Review latency: 18 min (to review both agents' work)
+- Cycle time: ~21 min (both worktrees' containers ran in parallel, so this is the shared wall-clock time for both runs, not this task alone)
+- Review latency: 18 min (to review this task's output specifically — Worktree 2's output took 25 min to review; see that log)
 - Cost per run: $0.18 (347.2k in / 2.9k out)
 ### Pass/Fail: Pass
 ### Observations
 #### What worked
-The markdown made for easy-to-read feedback. My detailed prompt definitely helped me get exactly what I need.
+The markdown made for easy-to-read feedback. My detailed prompt definitely helped me get exactly what I need — specifically, it reported all four coverage metrics (34.73% statements, 57.44% branches, 51.72% functions, 31.03% lines) exactly as `vitest run --coverage` produced them, with no rounding or estimating.
+#### What I learned from this run
+Only 2 of 6 source files (`normalize.js`, `watchlist.js`) had any tests at all — `render.js` and `search.js` don't even show up in the coverage report, because vitest's v8 provider only reports files a test run actually touches. The agent caught and called out this blind spot itself instead of just repeating the raw percentages, which is exactly the kind of context Level 4 on Coverage Reporting Accuracy is looking for. It also didn't just pick the file with the lowest raw percentage (`helpers.js` and `fetch.js` were both lower) — it weighed `watchlist.js` against them and chose it because it owns core state management and already has two documented, uncovered TODO bugs, which is a stronger justification than percentage alone.
 #### What failed
-Nothing
+Nothing — the run met every acceptance criterion on the first try.
 #### Changes made:
-None- Baseline
+None — Baseline
 

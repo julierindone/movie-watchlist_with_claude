@@ -10,19 +10,21 @@
 | Bug Diagnosis Accuracy    | 4           | Even though my codebase is a mess, the diagnosis was easy to follow.            |
 | Selected Fix Quality      | 4           | Addressed both parts of the issue, even though one would've fixed *most* of it. |
 | Justification Specificity | 4           | Justified why the fix wouldn't cause problems in a variety of future scenarios. |
-| Total                     | 4 / 12        | Pass threshold: 3 on #1 & #2; 2 on #3                                           |
+| Total                     | 12 / 12       | Pass threshold: 3 on #1 & #2; 2 on #3                                           |
 ### Measurements:
-- Cycle time: ~21 min (for both agents' work)
-- Review latency: 25 min (to review both agents' work)
+- Cycle time: ~21 min (both worktrees' containers ran in parallel, so this is the shared wall-clock time for both runs, not this task alone)
+- Review latency: 25 min (to review this task's output specifically — Worktree 1's output took 18 min to review; see that log)
 - Cost per run: $0.21 (255.6k in / 5.1k out)
 ### Pass/Fail: Pass
 ### Observations
 #### What worked
-The problem and fix were explained and justified. It walked through the fix. It included a whole section on why the fix would scale with the app.
+The agent correctly diagnosed that the missing `return` in `processWatchlistAdd`'s `data.Response === "False"` branch causes `movie` to become `undefined`, which then throws when `handleWatchlistIconClick` passes it to `addToWatchList(movie, ...)` — it traced the failure past the line named in the TODO to the actual crash site in the caller.
+#### What I learned from this run
+The agent didn't stop at the obvious one-line fix. It specifically flagged that a bare `return;` would still leave `movie` as `undefined` and wouldn't fix anything, because `handleWatchlistIconClick` never checks the return value at all — so the real fix had to touch two places (an explicit `return null;` sentinel in `processWatchlistAdd`, plus a guard in the caller) instead of one. That's a useful thing to know about this codebase generally: functions here don't enforce or document a return contract, so a caller can silently assume success, and a one-line "fix" at the spot a bug report points to can look complete while leaving the actual crash untouched.
 #### What failed
-Nothing
+Nothing — the plan addressed the bug fully within scope and modified no files, per the acceptance criteria.
 #### Changes made:
-Nothing - Baseline
+Nothing — Baseline
 
 ### Git Log:
 **NOTE:** I took the original `git log --oneline` out of this log *after* I uploaded it to the assignment page in Canvas, but *before* I committed it. My original upload is unaccessible by me, but maybe you can still access it.  
