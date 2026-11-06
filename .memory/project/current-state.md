@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-10-19
+Last updated: 2026-11-06
 Rewritten in place, not appended to — see `docs/memory-architecture.md` for why.
 
 ## Shipped

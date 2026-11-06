@@ -3,7 +3,7 @@
 - **Purpose:** plan of record for the persistent memory system in `movie-watchlist_with_claude`.
 - **Covers:** the system actually being submitted, not the draft built during the lesson's Try It activities.
 - **Headings:** follow the lesson's prescribed scaffold (3.1.4.1, Step 2).
-- **Last revised:** 2026-09-28
+- **Last revised:** 2026-11-06
 
 ---
 
